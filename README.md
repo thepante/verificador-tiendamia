@@ -22,6 +22,18 @@ El texto siempre se le agregará un link para verificar por uno mismo. A pesar d
 
 ---
 
+### Instalación
+En [/releases](https://github.com/thepante/verificador-tiendamia/releases) siempre van a estar todos los archivos listos. O directamente:
+ - [**Firefox**](https://github.com/thepante/verificador-tiendamia/releases/latest/download/verificador-tiendamia-Firefox.xpi)
+ - [**Chromium**](https://github.com/thepante/verificador-tiendamia/releases/latest/download/verificador-tiendamia-Chromium.xpi)
+
+ **Por qué esos permisos?**:
+  - tiendamia.com y activeTab: Para detectar el precio del producto y añadir lo visual en TiendaMia
+  - amazon.com, ebay.com y walmart.com: Para cargar la página del artículo y tomar el precio original a comparar
+  - webRequest: Relizar la carga de las páginas mencionadas
+
+---
+
 #### Nota: 
 Hay productos donde el precio puede variar dependiendo la personalización del mismo (colores, talles, etc). Y por lo general esos productos van listados con el rango de precios (de la opción más barata a la más cara) hasta que uno elija una opción concreta.
 
