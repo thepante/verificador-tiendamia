@@ -1,0 +1,8 @@
+/addon
+/node_modules
+/web-ext-artifacts
+.git
+.cache
+.eslintrc.json
+addon.crx
+addon.pem

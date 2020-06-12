@@ -1,0 +1,26 @@
+{
+    "manifest_version": 2,
+    "name": "Verificador de precios de Tiendamia",
+    "description": "Evita que te cobren de más con los productos listados en Tiendamia",
+    "version": "0.1.3",
+    "content_scripts": [
+      {
+        "matches": ["https://tiendamia.com/*"],
+        "js":  ["content.js"]
+      }
+    ],
+    "background": {
+      "scripts": [
+        "background.js"
+      ]
+    },
+    "permissions": [
+      "https://www.tiendamia.com/",
+      "https://www.amazon.com/",
+      "https://www.ebay.com/",
+      "https://www.walmart.com/",
+      "webRequest",
+      "activeTab"
+    ]
+  }
+  

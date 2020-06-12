@@ -1,0 +1,24 @@
+{
+  "name": "astm",
+  "version": "1.0.0",
+  "description": "Evita que te cobren de más con los productos listados en Tiendamia",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf addon && webpack && npm run copy:addon",
+    "copy:addon": "cp manifest.json ./addon"
+  },
+  "license": "MPL-2.0",
+  "devDependencies": {
+    "@babel/core": "^7.10.2",
+    "@babel/preset-env": "^7.10.2",
+    "@babel/preset-react": "^7.10.1",
+    "babel-loader": "^8.1.0",
+    "webpack": "^2.3.2"
+  },
+  "dependencies": {
+    "artoo-js": "^0.4.0",
+    "cheerio": "^1.0.0-rc.3",
+    "jquery": "^3.5.1",
+    "regenerator-runtime": "^0.13.5"
+  }
+}
