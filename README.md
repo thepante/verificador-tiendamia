@@ -25,7 +25,7 @@ El texto siempre se le agregará un link para verificar por uno mismo. A pesar d
 #### Nota: 
 Hay productos donde el precio puede variar dependiendo la personalización del mismo (colores, talles, etc). Y por lo general esos productos van listados con el rango de precios (de la opción más barata a la más cara) hasta que uno elija una opción concreta.
 
-En esos casos, la extensión comparará el precio más alto (la opción más cara en la tienda de origen). Esto es algo que más adelante lo voy a cambiar haciendo que compare exactamente la misma versión.
+En esos casos, la extensión intentará comparar el precio más alto (la opción más cara en la tienda de origen). Esto es algo que más adelante lo voy a cambiar haciendo que compare exactamente la misma versión. **Puede fallar, por cierto**.
 
 ---
 
