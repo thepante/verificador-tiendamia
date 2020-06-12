@@ -25,7 +25,7 @@ El texto siempre se le agregará un link para verificar por uno mismo. A pesar d
 ### Instalación
 En [/releases](https://github.com/thepante/verificador-tiendamia/releases) siempre van a estar todos los archivos listos. O directamente:
  - [**Firefox**](https://github.com/thepante/verificador-tiendamia/releases/latest/download/verificador-tiendamia-Firefox.xpi)
- - [**Chromium**](https://github.com/thepante/verificador-tiendamia/releases/latest/download/verificador-tiendamia-Chromium.xpi)
+ - [**Chromium**](https://github.com/thepante/verificador-tiendamia/releases/latest/download/verificador-tiendamia-Chromium.crx)
 
  **Por qué esos permisos?**:
   - tiendamia.com y activeTab: Para detectar el precio del producto y añadir lo visual en TiendaMia
