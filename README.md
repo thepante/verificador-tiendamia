@@ -27,10 +27,13 @@ En [/releases](https://github.com/thepante/verificador-tiendamia/releases) siemp
  - [**Firefox**](https://github.com/thepante/verificador-tiendamia/releases/latest/download/verificador-tiendamia-Firefox.xpi)
  - [**Chromium**](https://github.com/thepante/verificador-tiendamia/releases/latest/download/verificador-tiendamia-Chromium.crx)
 
- **Por qué esos permisos?**:
-  - tiendamia.com y activeTab: Para detectar el precio del producto y añadir lo visual en TiendaMia
-  - amazon.com, ebay.com y walmart.com: Para cargar la página del artículo y tomar el precio original a comparar
-  - webRequest: Relizar la carga de las páginas mencionadas
+**Chrome**:
+Para tenerlo en Chrome hay que usarlo desempaquetado. Descargar el .crx o el [unpacked.zip](https://github.com/thepante/verificador-tiendamia/releases/latest/download/unpacked.zip) y extraer el contenido. Luego ir al panel de extensiones del navegador (chrome://extensions), activar el "modo desarrollador", y nos habilita la opción "cargar desempaquetada", click allí y seleccionar la carpeta donde extraimos los archivos.
+
+**Por qué esos permisos?**:
+ - tiendamia.com y activeTab: Para detectar el precio del producto y añadir lo visual en TiendaMia
+ - amazon.com, ebay.com y walmart.com: Para cargar la página del artículo y tomar el precio original a comparar
+ - webRequest: Relizar la carga de las páginas mencionadas
 
 ---
 
