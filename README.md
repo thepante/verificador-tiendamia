@@ -44,9 +44,12 @@ En esos casos, la extensión intentará comparar el precio más alto (la opción
 
 ---
 
-**Build? Dependencias:**
-
+**Build? Dependencias:** 
+ - artoo-js 
+ - cheerio  
+ - jquery 
+ - regenerator-runtime
 ```
-npm install artoo-js cheerio jquery regenerator-runtime
+npm install
 ```
 
