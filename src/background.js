@@ -2,7 +2,7 @@ require("regenerator-runtime/runtime");
 
 var artoo = require('artoo-js');
 
-function get_props(store){
+function getProps(store){
   let props = {}; 
   switch (store){
     case 'amz':
@@ -31,7 +31,7 @@ function connected(p) {
     if (m.product) {
       console.log(m.product);
       let product = m.product;
-      let props = get_props(product.store);
+      let props = getProps(product.store);
 
       // Get url
       let url = props.url + product.sku;
@@ -54,24 +54,24 @@ function connected(p) {
         default:
           // Scrap store html, then get price
           let $html = artoo.helpers.jquerify(store);
-          let theres_price = artoo.scrape($html.find(props.div))[0];
-          console.log(theres_price)
+          let priceDiv = artoo.scrape($html.find(props.div))[0];
+          console.log("priceDiv", priceDiv);
 
-          let store_price = null;
+          let priceFromStore = null;
           let diff = null;
 
           // If price found
-          if (theres_price != null) {
+          if (priceDiv != null) {
             // Get price or prices range
-            store_price = artoo.scrape($html.find(props.div))[0];
-            store_price = store_price.match(/[+-]?\d+(?:\.\d+)?/g).map(Number);
+            priceFromStore = artoo.scrape($html.find(props.div))[0];
+            priceFromStore = priceFromStore.match(/[+-]?\d+(?:\.\d+)?/g).map(Number);
 
             // Get max price
-            store_price = Math.max.apply(Math, store_price);
+            priceFromStore = Math.max.apply(Math, priceFromStore);
 
             // Check difference
-            diff = product.price - store_price;
-            console.log("Store price:", store_price, "- Diff:", diff);
+            diff = product.price - priceFromStore;
+            console.log("Store price:", priceFromStore, "- Diff:", diff);
           } 
           // If not price: set as not found
           else {
@@ -81,7 +81,7 @@ function connected(p) {
 
           // Send it to content
           content.postMessage({ response: {diff: diff, url: url} });
-          console.log("Difference sended to content");
+          console.log("Result sent to content");
       }
     }
     

@@ -15,10 +15,10 @@ if (product.store == 'ebay') {
 }
 
 // Assign correct div for 'same price as' text
-var same_price = ".same-price-amz";
+var divSamePrice = ".same-price-amz";
 
 if (product.store != 'amz') {
-		same_price = "#product-price-clone .amz-span";
+		divSamePrice = "#product-price-clone .amz-span";
 }
 
 // Get price and clean currency symbol
@@ -46,17 +46,17 @@ function display_info(info){
 	if (info.diff == 26244224) {
 		append_style(`
 			#product-price-clone .price { opacity: 0.5; }
-			${same_price}:before { content: '\\26A0'; margin-right: 5px; }
-			${same_price}, ${same_price} a { color: orange !important; }
+			${divSamePrice}:before { content: '\\26A0'; margin-right: 5px; }
+			${divSamePrice}, ${divSamePrice} a { color: orange !important; }
 		`);
-		let same_price_text = document.querySelectorAll(same_price)[0].innerText;
-		document.querySelectorAll(same_price)[0].innerHTML = `No se pudo verificar el precio`;
+		let same_price_text = document.querySelectorAll(divSamePrice)[0].innerText;
+		document.querySelectorAll(divSamePrice)[0].innerHTML = `No se pudo verificar el precio`;
 	}
 	// If price is higher
 	else if (info.diff > 0) {
 		append_style(`
-			${same_price}:before { content: '\\2717'; float: left; margin-right: 5px; }
-			${same_price}, ${same_price} a { text-decoration: line-through; color: red !important; }
+			${divSamePrice}:before { content: '\\2717'; float: left; margin-right: 5px; }
+			${divSamePrice}, ${divSamePrice} a { text-decoration: line-through; color: red !important; }
 			#product-price-clone .price { color: red; font-size: 22px; }
 			#product-price-clone .price:after { content: "(${curreny_sign}${info.diff.toFixed(0)}+)"; font-weight: bold; padding-left: 8px; font-size: 26px; }
 		`);
@@ -64,13 +64,13 @@ function display_info(info){
 	// If price is correct
 	else {
 		append_style(`
-			${same_price}:before { content: '\\2714'; }
-			${same_price} { color: green; }
+			${divSamePrice}:before { content: '\\2714'; }
+			${divSamePrice} { color: green; }
 		`);
 	}
 
-	let same_price_text = document.querySelectorAll(same_price)[0].innerText;
-	document.querySelectorAll(same_price)[0].innerHTML = `<a href="${info.url}" target="_blank" title="Ver en la tienda de origen">${same_price_text}</a>`;
+	let samePriceText = document.querySelectorAll(divSamePrice)[0].innerText;
+	document.querySelectorAll(divSamePrice)[0].innerHTML = `<a href="${info.url}" target="_blank" title="Ver en la tienda de origen">${samePriceText}</a>`;
 }
 
 // Listen to background
@@ -84,8 +84,8 @@ bg.onMessage.addListener( function(m) {
 });
 
 // Send product to background
-let product_view = ["/producto?", "/e-product?", "/productow?"];
-if (product_view.some(el => document.baseURI.includes(el))) {
+let productViewPage = ["/producto?", "/e-product?", "/productow?"];
+if (productViewPage.some(el => document.baseURI.includes(el))) {
 	bg.postMessage({product: product});
 	console.log("Product page, request check");
 }
