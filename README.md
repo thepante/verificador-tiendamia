@@ -9,16 +9,16 @@ Aveces los precios de los productos en Tiendamia no son los correctos :/ Y para 
 
 ### Características
 
-- Al abrir un producto, la extensión va a revisar el precio del mismo en la tienda de origen.
-- Al revisar, lo compara e indica si el precio es o no el correcto.
-- Agrega un enlace para abrir el producto en la tienda de origen.
+- Al abrir un producto, la extensión revisará su precio en la tienda de origen.
+- Al revisar: lo compara y mostrará si es diferente o es el correcto.
+- Convierte el texto "Mismo precio que en..." en un link al producto en la tienda original.
 
-#### Qué estados señala?
+#### Qué mostrará?
  1. Si el precio es el mismo: texto verde y un tick de correcto.
  2. Si el precio es mayor: texto rojo y una X.
- 3. Si en la tienda no hay precio listado ó no se pudo verificar por cualquiera sea el motivo: texto naranja.
+ 3. Si en la tienda no hay precio listado o no se pudo verificar por cualquiera sea el motivo: texto naranja.
  
-El texto siempre se le agregará un link para verificar por uno mismo. A pesar de lo que diga la extensión: es recomendable siempre revisar antes de comprar.
+El texto que se encuentra bajo el precio, se convierte en un link al producto en la tienda de origen. A pesar de lo que diga la extensión: es recomendable siempre revisar antes de comprar.
 
 ---
 
@@ -40,16 +40,17 @@ Para tenerlo en Chrome hay que usarlo desempaquetado. Descargar el .crx o el [un
 #### Nota: 
 Hay productos donde el precio puede variar dependiendo la personalización del mismo (colores, talles, etc). Y por lo general esos productos van listados con el rango de precios (de la opción más barata a la más cara) hasta que uno elija una opción concreta.
 
-En esos casos, la extensión intentará comparar el precio más alto (la opción más cara en la tienda de origen). Esto es algo que más adelante lo voy a cambiar haciendo que compare exactamente la misma versión. **Puede fallar, por cierto**.
+En esos casos, la extensión intentará comparar el precio más alto (la opción más cara en la tienda de origen). Esto es algo que más adelante lo trataré de cambiarlo haciendo que compare exactamente la misma versión. **Puede fallar, por cierto**.
 
 ---
 
-**Build? Dependencias:** 
- - artoo-js 
- - cheerio  
- - jquery 
+**Build? Dependencias:**
+ - artoo-js
+ - cheerio
+ - jquery
  - regenerator-runtime
 ```
 npm install
+npm run build
 ```
 
