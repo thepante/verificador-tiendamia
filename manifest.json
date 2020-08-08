@@ -20,8 +20,7 @@
       "https://www.amazon.com/",
       "https://www.ebay.com/",
       "https://www.walmart.com/",
-      "webRequest",
-      "activeTab"
+      "webRequest"
     ]
   }
   
