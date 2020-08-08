@@ -7,86 +7,132 @@ function getProps(store){
   switch (store){
     case 'amz':
       props.url = "https://www.amazon.com/dp/";
-      props.div = "#priceblock_ourprice";
+      props.priceDiv = "#priceblock_ourprice";
+      props.asUsedDiv = "#usedBuySection";
+      props.withoutStock = "#outOfStock";
       break;
     case 'ebay':
       props.url = "https://www.ebay.com/itm/";
-      props.div = "#prcIsum";
+      props.priceDiv = "#prcIsum";
       break;
     case 'wrt':
       props.url = "https://www.walmart.com/ip/";
-      props.div = ".price-group";
+      props.priceDiv = ".price-group";
       break;
   }
   return props;
 }
 
-// Communication with content js
-var content;
-function connected(p) {
-  content = p;
-  content.onMessage.addListener(async function(m) {
-
-    // When receive product data
-    if (m.product) {
-      console.log(m.product);
-      let product = m.product;
-      let props = getProps(product.store);
-
-      // Get url
-      let url = props.url + product.sku;
-      console.log(url);
-      
-      // Load link
-      let store = await fetch(url)
-      .then(function(response) {
-        return response.text();
-      })
-      .catch(function(err) {  
-        console.log('Fetch Error', err);  
-      });
-
-      switch (product.price) {
-        case "0.00":
-          content.postMessage({ response: {diff: 26244224, url: url} });
-          break;
-
-        default:
-          // Scrap store html, then get price
-          let $html = artoo.helpers.jquerify(store);
-          let priceDiv = artoo.scrape($html.find(props.div))[0];
-          console.log("priceDiv", priceDiv);
-
-          let priceFromStore = null;
-          let diff = null;
-
-          // If price found
-          if (priceDiv != null) {
-            // Get price or prices range
-            priceFromStore = artoo.scrape($html.find(props.div))[0];
-            priceFromStore = priceFromStore.match(/[+-]?\d+(?:\.\d+)?/g).map(Number);
-
-            // Get max price
-            priceFromStore = Math.max.apply(Math, priceFromStore);
-
-            // Check difference
-            diff = product.price - priceFromStore;
-            console.log("Store price:", priceFromStore, "- Diff:", diff);
-          } 
-          // If not price: set as not found
-          else {
-            diff = 26244224;
-            console.log("Price in store not found - Fallback set:", diff);
-          }
-
-          // Send it to content
-          content.postMessage({ response: {diff: diff, url: url} });
-          console.log("Result sent to content");
-      }
+/**
+ * Loads the product in the original store
+ * @param {string} url - Full address to the product page
+ * @return {object} Containing `status` and `data`
+ */
+const getProductPage = async function(url){
+  let content = {};
+  return await fetch(url)
+  .then(function(response) {
+    if (response.ok) {
+      return response.text();
+    }else{
+      throw Error(response.statusText);
     }
-    
+  })
+  .then(function(response) {
+    content.status = 'ok';
+    content.data = response;
+    return content;
+  })
+  .catch(function(error) {
+    content.status = 'error';
+    content.data = error;
+    return content;
   });
 }
 
-chrome.runtime.onConnect.addListener(connected);
+/**
+ * Get the product and return the price checked data
+ * @param {object} product - From content
+ * @return {object} Conclusion to send back to content
+ */
+const analyzeThis = async function(product){
+  if (product.price < 0.001) {
+    console.log("Got no price");
+    return {error: "noprice"};
+  }
+
+  let $html;
+
+  const getPriceFrom = function(node){
+    let divPrice = artoo.scrape($html.find(node))[0];
+    divPrice = divPrice.match(/\b\d[\d,.]*\b/g);
+    divPrice.forEach(removeCommas);
+    function removeCommas(e, i){ divPrice[i] = divPrice[i].replace(',','')};
+    
+    // Array of price(s) collected - returns the highest
+    return Math.max.apply(Math, divPrice.map(Number));
+  }
+
+  const getDiffFrom = function(node){
+    let priceFromStore = getPriceFrom(node);
+    let diff = product.price - priceFromStore;
+    console.log(product.sku, '→ Original/highest:', priceFromStore);
+    return Number(diff.toFixed(2));
+  }
+
+  const findNode = function(selector){
+    return artoo.scrape($html.find(selector))[0];
+  }
+
+  const store = getProps(product.store);
+  const productURL = store.url + product.sku;
+  const storeProductPage = await getProductPage(productURL);
+
+  let result = {};
+
+  if (storeProductPage.status === 'ok') {
+    $html = artoo.helpers.jquerify(storeProductPage.data);
+    const priceNode = findNode(store.priceDiv);
+    // console.log("priceDiv", priceNode);
+
+    // If main price div is found
+    if (priceNode != null) {
+      result.diff = getDiffFrom(store.priceDiv);
+    }
+    // If got not main node, try with 'used' div
+    else if (findNode(store.asUsedDiv)) {
+      console.log(product.sku, "→ Detected as used");
+      result.diff = getDiffFrom(store.asUsedDiv);
+      result.used = true;
+    }
+    // Else, check if its out of stock
+    else if (findNode(store.withoutStock)) {
+      result.error = 'nostock';
+      console.log(product.sku, "→ Product without stock");
+    }
+    // Price wasn't found
+    else {
+      result.error = 'notfound';
+      console.log(product.sku, "→ Price in store not found");
+    }
+  } 
+  // If url fetch failed
+  else {
+    result.error = 'fetcherror';
+    console.log("Fetch failed:", storeProductPage.error);
+  }
+  
+  // Return conclusion
+  result.url = productURL;
+  console.log(product.sku, "→ Final result", result);
+  return result;
+}
+
+
+chrome.runtime.onMessage.addListener((product, s, sendResponse) => {
+  console.log(product.sku, '→ Checking', product);
+  analyzeThis(product).then(sendResponse);
+  return true;
+});
+
 console.log("Background loaded");
