@@ -5,7 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rm -rf addon && webpack && npm run copy:addon",
-    "copy:addon": "cp manifest.json ./addon & cp ./src/style.css ./addon"
+    "copy:addon": "cp manifest.json ./addon & cp ./src/style.css ./addon",
+    "pack": "web-ext build --source-dir=./addon --artifacts-dir=./"
   },
   "license": "MPL-2.0",
   "devDependencies": {
