@@ -67,27 +67,10 @@ const icon = {
     </svg>`
 }
 
-const labelNode = document.getElementById('vt-splabel');
-const statusDiv = document.getElementById('vt-status');
-
-let currencySign = "";
-if (document.querySelectorAll(".currency_select_off")[0].style.display != 'inline') {
-  currencySign = "U$S ";
-}
-
 // Colors
 const RIGHT = '#588f22'; // green
 const WRONG = '#8f2f22'; // darkred 
 const WARN  = '#cf8525'; // orange
-
-let label = originalText;
-let statusMark;
-let cssRules = '';
-let textColor = '';
-let priceStyle = ''
-
-let pdimmed = 'opacity: 0.6;';
-let pwarned = 'color:#c83333;font-size:20px;'
 
 /**
  * Receives the result from background and apply the correct styling
@@ -95,6 +78,23 @@ let pwarned = 'color:#c83333;font-size:20px;'
  */
 function handleResponse(response){
   console.log("→ Response: ", response);
+  let currencySign = "";
+  if (document.querySelectorAll(".currency_select_off")[0].style.display != 'inline') {
+    currencySign = "U$S ";
+  }
+
+  const labelNode = document.getElementById('vt-splabel');
+  const statusDiv = document.getElementById('vt-status');
+  
+  let label = originalText;
+  let statusMark;
+  let cssRules = '';
+  let textColor = '';
+  let priceStyle = ''
+  
+  let pdimmed = 'opacity: 0.6;';
+  let pwarned = 'color:#c83333;font-size:20px;'
+  
   if (response.error){
     // console.log("GOT ERROR");
     textColor = WARN;
@@ -160,7 +160,6 @@ function handleResponse(response){
   document.getElementById('vt-spinner').remove();
   statusDiv.innerHTML = statusMark;
 
-  console.log(cssRules);
   appendStyle(cssRules);
 };
 
