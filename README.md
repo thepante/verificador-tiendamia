@@ -28,20 +28,21 @@ El texto que se encuentra bajo el precio, siempre se conviertirá en un link al 
 En [/releases](https://github.com/thepante/verificador-tiendamia/releases) siempre van a estar todos los archivos listos. O directamente:
  - [**Firefox**](https://github.com/thepante/verificador-tiendamia/releases/latest/download/verificador-tiendamia-Firefox.xpi)
  - [**Chromium**](https://github.com/thepante/verificador-tiendamia/releases/latest/download/verificador-tiendamia-Chromium.crx)
+ - [**Chrome**](https://github.com/thepante/verificador-tiendamia/releases/latest/download/verificador-tiendamia-Chrome.crx)
 
-**Chrome**:
-Para tenerlo en Chrome hay que usarlo desempaquetado. Descargar el .crx o el [unpacked.zip](https://github.com/thepante/verificador-tiendamia/releases/latest/download/unpacked.zip) y extraer el contenido. Luego ir al panel de extensiones del navegador (chrome://extensions), activar el "modo desarrollador", y nos habilita la opción "cargar desempaquetada", click allí y seleccionar la carpeta donde extraimos los archivos.
+**Alternativa**:
+En Chromium/Chrome se puede *instalar* con el [unpacked.zip](https://github.com/thepante/verificador-tiendamia/releases/latest/download/unpacked.zip). Ir al panel de extensiones del navegador `chrome://extensions`, activar el `modo desarrollador`, y nos habilita la opción `cargar desempaquetada`, click allí y seleccionar la carpeta donde extraimos los archivos del .zip en cuestión.
 
 **Por qué esos permisos?**:
  - `tiendamia.com` - Para detectar el precio del producto y añadir lo visual en TiendaMia
  - `amazon.com`, `ebay.com`, `walmart.com` - Para cargar la página del artículo y evaluar el precio original
- - `webRequest` - Relizar la carga de las páginas mencionadas
+ - `webRequest` - Relizar la carga de las páginas mencionadas para tomar el precio de origen
 
 ---
 
 **Nota:** Hay productos donde el precio puede variar dependiendo la personalización del mismo (colores, talles, etc). Y por lo general esos productos van listados con el rango de precios (de la opción más barata a la más cara) hasta que uno elija una opción concreta.
 
-En esos casos, la extensión intentará comparar el precio más alto (la opción más cara en la tienda de origen). Esto es algo que más adelante trataré de cambiarlo haciendo que compare exactamente la misma versión. **Puede fallar, por cierto**.
+En esos casos, la extensión intentará comparar el precio más alto (la opción más cara en la tienda de origen). Esto es algo que más adelante trataré de cambiarlo haciendo que compare exactamente la misma versión.
 
 ---
 
