@@ -5,7 +5,7 @@ Aveces los precios de los productos en Tiendamia no son los correctos :/ Y para 
 
 ---
 
-![screenshot](https://i.imgur.com/3QWyJRs.png)
+![screenshot](https://i.imgur.com/52WuxBq.png)
 
 ---
 
