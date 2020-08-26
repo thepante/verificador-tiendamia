@@ -27,8 +27,7 @@ El texto que se encuentra bajo el precio, siempre se conviertirá en un link al 
 ### Instalación
 En [/releases](https://github.com/thepante/verificador-tiendamia/releases) siempre van a estar todos los archivos listos. O directamente:
  - [**Firefox**](https://github.com/thepante/verificador-tiendamia/releases/latest/download/verificador-tiendamia-Firefox.xpi)
- - [**Chromium**](https://github.com/thepante/verificador-tiendamia/releases/latest/download/verificador-tiendamia-Chromium.crx)
- - [**Chrome**](https://github.com/thepante/verificador-tiendamia/releases/latest/download/verificador-tiendamia-Chrome.crx)
+ - [**Chromium / Chrome**](https://github.com/thepante/verificador-tiendamia/releases/latest/download/verificador-tiendamia-Chrome.crx)
 
 **Alternativa**:
 En Chromium/Chrome se puede *instalar* con el [unpacked.zip](https://github.com/thepante/verificador-tiendamia/releases/latest/download/unpacked.zip). Ir al panel de extensiones del navegador `chrome://extensions`, activar el `modo desarrollador`, y nos habilita la opción `cargar desempaquetada`, click allí y seleccionar la carpeta donde extraimos los archivos del .zip en cuestión.
