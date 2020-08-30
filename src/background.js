@@ -3,7 +3,7 @@ require("regenerator-runtime/runtime");
 var artoo = require('artoo-js');
 
 function getProps(store){
-  let props = {}; 
+  let props = {};
   switch (store){
     case 'amz':
       props.url = "https://www.amazon.com/dp/";
@@ -68,7 +68,7 @@ const analyzeThis = async function(product){
     divPrice = divPrice.match(/\b\d[\d,.]*\b/g);
     divPrice.forEach(removeCommas);
     function removeCommas(e, i){ divPrice[i] = divPrice[i].replace(',','')};
-    
+
     // Array of price(s) collected - returns the highest
     return Math.max.apply(Math, divPrice.map(Number));
   }
@@ -115,13 +115,13 @@ const analyzeThis = async function(product){
       result.error = 'notfound';
       console.log(product.sku, "→ Price in store not found");
     }
-  } 
+  }
   // If url fetch failed
   else {
     result.error = 'fetcherror';
     console.log("Fetch failed:", storeProductPage.error);
   }
-  
+
   // Return conclusion
   result.url = productURL;
   console.log(product.sku, "→ Final result", result);

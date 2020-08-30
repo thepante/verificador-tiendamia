@@ -69,7 +69,7 @@ const icon = {
 
 // Colors
 const RIGHT = '#588f22'; // green
-const WRONG = '#8f2f22'; // darkred 
+const WRONG = '#8f2f22'; // darkred
 const WARN  = '#cf8525'; // orange
 
 /**
@@ -78,23 +78,23 @@ const WARN  = '#cf8525'; // orange
  */
 function handleResponse(response){
   console.log("→ Response: ", response);
-  let currencySign = "";
-  if (document.querySelectorAll(".currency_select_off")[0].style.display != 'inline') {
-    currencySign = "U$S ";
-  }
+
+  // if not displaying in dollars, add symbol
+  let priceInDollars = document.querySelector('.webcurrency_off .dollar_price');
+  let currencySign = (!priceInDollars) ? "U$S " : "";
 
   const labelNode = document.getElementById('vt-splabel');
   const statusDiv = document.getElementById('vt-status');
-  
+
   let label = originalText;
   let statusMark;
   let cssRules = '';
   let textColor = '';
   let priceStyle = ''
-  
+
   let pdimmed = 'opacity: 0.6;';
   let pwarned = 'color:#c83333;font-size:20px;'
-  
+
   if (response.error){
     // console.log("GOT ERROR");
     textColor = WARN;
@@ -118,14 +118,14 @@ function handleResponse(response){
         console.log("Original store wasn't loaded so checking failed from the go to");
         break;
     }
-    
+
   } else if ('diff' in response){
     if (response.diff > 0) {
       label = 'No es el mismo precio que en ' + storeName;
       priceStyle += pwarned;
       cssRules += `
-        #product-price-clone .price:after { 
-          content: "${currencySign + response.diff.toFixed(0)}+"; 
+        #product-price-clone .price:after {
+          content: "${currencySign + response.diff.toFixed(0)}+";
           font-weight: bold; padding-left: 8px; font-size: 26px;
           padding: 0px 8px;
           font-size: 22px;
