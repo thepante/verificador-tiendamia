@@ -147,10 +147,9 @@ function handleResponse(response){
   }
 
   if (response.used){
-    console.log("Back says that this product in the original store is published as used");
-    label += '. Figura como usado';
+    console.log("Detected this product in the original store published as used");
+    label += '<br>Figura como usado';
     textColor = WARN;
-    statusMark = icon.tick;
   }
 
   // Update text and styling
