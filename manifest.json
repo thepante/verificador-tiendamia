@@ -1,8 +1,8 @@
 {
     "manifest_version": 2,
     "name": "Verificador de precios de Tiendamia",
-    "description": "Evita que te cobren de más con los productos listados en Tiendamia",
-    "version": "0.2.2",
+    "description": "Comprueba los precios de los productos que visualizas en Tiendamia",
+    "version": "0.2.3",
     "content_scripts": [
       {
         "matches": ["https://tiendamia.com/*"],
@@ -16,7 +16,6 @@
       ]
     },
     "permissions": [
-      "https://www.tiendamia.com/",
       "https://www.amazon.com/",
       "https://www.ebay.com/",
       "https://www.walmart.com/",

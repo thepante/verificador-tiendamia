@@ -1,7 +1,7 @@
 ### Verificador de precios de Tiendamia
 Hay veces que los precios de los productos en Tiendamia no son los correctos :/ Y para corroborar que lo sean hay que buscar el mismo producto *a mano*. Eso es lo que automatiza esta extensión.
 
-**Ves un producto en TiendaMia → La extensión corrobora el precio → Visualizas el resultado allí mismo**
+**Ves un producto en TiendaMia → La extensión corrobora el precio → Ves el resultado ahí mismo**
 
 ---
 
@@ -45,7 +45,7 @@ En esos casos, la extensión intentará comparar el precio más alto (la opción
 
 ---
 
-**Build?** Las dependencias que usa son `artoo-js`, `cheerio` y `regenerator-runtime`
+**Build?** Las dependencias que usa son `artoo-js` y `regenerator-runtime`
 ```bash
 npm install    # instala las dependencias
 npm run build  # para hacer build
