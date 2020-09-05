@@ -6,15 +6,10 @@ let product = {
 };
 
 // Clean ebay sku
-if (product.store == 'ebay') {
-  product.sku = product.sku.match(/\|([+-]?\d+(?:\.\d+)?)\|/)[1];
-}
+if (product.store === 'ebay') product.sku = product.sku.match(/\|([+-]?\d+(?:\.\d+)?)\|/)[1];
 
 // Assign correct div for 'same price as' text
-let divSamePrice = ".same-price-amz";
-if (product.store != 'amz') {
-		divSamePrice = "#product-price-clone .amz-span";
-}
+let divSamePrice = (product.store === 'amz') ? ".same-price-amz" : "#product-price-clone .amz-span";
 
 // Assign store name as per code
 let storeName;
@@ -141,6 +136,7 @@ function handleResponse(response){
 
     } else {
       // All right, same price
+      label = 'Mismo precio que en ' + storeName;
       textColor = RIGHT;
       statusMark = icon.tick;
     }
