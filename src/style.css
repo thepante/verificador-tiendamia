@@ -12,6 +12,13 @@
   display: none !important;
 }
 
+.add_wishlist {
+  position: absolute;
+  top: 20px;
+  left: unset !important;
+  right: 20px !important;
+}
+
 /* - Spinner - */
 
 .sk-chase {
