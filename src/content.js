@@ -1,25 +1,30 @@
+const skuDiv = document.getElementById("SKU_producto_ajax");
+const optionsDiv = document.getElementById('product-options-wrapper');
+
 // Get product info
 let product = {
-  sku: document.getElementById("SKU_producto_ajax").innerText,
-  price: getPriceFrom("finalprice_producto_ajax"),
-  store: document.baseURI.match(/(\?)([^\=]+)/)[2]
+  sku: null,
+  price: null,
+  store: null,
 };
 
-// Clean ebay sku
-if (product.store === 'ebay') product.sku = product.sku.match(/\|([+-]?\d+(?:\.\d+)?)\|/)[1];
+function fillProductData() {
+  let storeCode = document.baseURI.match(/(\?)([^\=]+)/)[2];
+  product.store = storeCode;
+  product.price = getPriceFrom("finalprice_producto_ajax");
+  product.sku = (storeCode === 'ebay')
+    ? skuDiv.innerText.match(/\|([+-]?\d+(?:\.\d+)?)\|/)[1]
+    : skuDiv.innerText;
+
+  console.info(product);
+}
+fillProductData();
 
 // Assign correct div for 'same price as' text
 let divSamePrice = (product.store === 'amz') ? ".same-price-amz" : "#product-price-clone .amz-span";
 
-// Assign store name as per code
-let storeName;
-if (product.store === 'amz') {
-  storeName = 'Amazon';
-} else if (product.store === 'ebay') {
-  storeName = 'eBay';
-} else if (product.store === 'wrt') {
-  storeName = 'Walmart';
-}
+// Assign store name by its code
+let storeName = (product.store === 'amz') ? 'Amazon' : (product.store === 'ebay') ? 'eBay' : 'Walmart';
 
 // Modify price info text HTML
 const originalText = document.querySelector(divSamePrice).innerText;
@@ -35,8 +40,6 @@ function getPriceFrom(cssID){
 	price = price.match(/[+-]?\d+(?:\.\d+)?/g)[0];
 	return Number(price);
 }
-
-console.log(product);
 
 function appendStyle(rules){
   let s = document.createElement('style');
@@ -69,7 +72,7 @@ const WARN  = '#cf8525'; // orange
 
 /**
  * Receives the result from background and apply the correct styling
- * @param {object} response - Conclusion response from back
+ * @param {object} response - Response from background
  */
 function handleResponse(response){
   console.log("→ Response: ", response);
@@ -87,13 +90,12 @@ function handleResponse(response){
   let textColor = '';
   let priceStyle = ''
 
-  let pdimmed = 'opacity: 0.6;';
-  let pwarned = 'color:#c83333;font-size:20px;'
+  let dimmedPrice = 'opacity: 0.6;';
+  let warnedPrice = 'color:#c83333;font-size:20px;'
 
   if (response.error){
-    // console.log("GOT ERROR");
     textColor = WARN;
-    priceStyle += pdimmed;
+    priceStyle += dimmedPrice;
     statusMark = icon.warn;
 
     switch(response.error){
@@ -117,7 +119,9 @@ function handleResponse(response){
   } else if ('diff' in response){
     if (response.diff > 0) {
       label = 'No es el mismo precio que en ' + storeName;
-      priceStyle += pwarned;
+      priceStyle += warnedPrice;
+      textColor = WRONG;
+      statusMark = icon.cross;
       cssRules += `
         #product-price-clone .price:after {
           content: "${currencySign + response.diff.toFixed(0)}+";
@@ -127,9 +131,8 @@ function handleResponse(response){
           background: white;
           border-radius: 4px;
           box-shadow: 0 1px 1px 4px #7777770a;
-        }`;
-      textColor = WRONG;
-      statusMark = icon.cross;
+        }
+      `;
 
       document.getElementById('finalprice_producto_ajax').title = 'Precio en TiendaMia';
       document.querySelector('#product-price-clone .price').title = `U$S ${product.price - response.diff} en ${storeName}`;
@@ -158,10 +161,22 @@ function handleResponse(response){
   appendStyle(cssRules);
 };
 
+// if options, watch for selection change
+if (optionsDiv) {
+  let observer = new MutationObserver(function(mutations) {
+    if (skuDiv.value !== product.sku) {
+      fillProductData();
+      chrome.runtime.sendMessage(product, handleResponse);
+    }
+  });
+
+  observer.observe(skuDiv, {childList: true, characterData: true});
+}
+
 // Send product to background
 let productViewPage = ["/producto?", "/e-product?", "/productow?"];
 if (productViewPage.some(el => document.baseURI.includes(el))) {
-  console.log("Product page → request check");
+  console.log("Request check");
   chrome.runtime.sendMessage(product, handleResponse);
 }
 
