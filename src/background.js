@@ -130,6 +130,7 @@ const analyzeThis = async function(product){
 
 
 chrome.runtime.onMessage.addListener((product, s, sendResponse) => {
+  if (product.store === 'ebay') product.sku = product.sku.match(/\|([+-]?\d+(?:\.\d+)?)\|/)[1];
   console.log(product.sku, '→ Checking', product);
   analyzeThis(product).then(sendResponse);
   return true;

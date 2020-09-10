@@ -9,12 +9,9 @@ let product = {
 };
 
 function fillProductData() {
-  let storeCode = document.baseURI.match(/(\?)([^\=]+)/)[2];
-  product.store = storeCode;
+  product.store = document.baseURI.match(/(\?)([^\=]+)/)[2];
   product.price = getPriceFrom("finalprice_producto_ajax");
-  product.sku = (storeCode === 'ebay')
-    ? skuDiv.innerText.match(/\|([+-]?\d+(?:\.\d+)?)\|/)[1]
-    : skuDiv.innerText;
+  product.sku = skuDiv.innerText;
 
   console.info(product);
 }
@@ -176,7 +173,7 @@ if (optionsDiv) {
     }
   });
 
-  observer.observe(skuDiv, {attributes: true, childList: true, characterData: true});
+  observer.observe(skuDiv, {childList: true, characterData: true});
 }
 
 // Send product to background
