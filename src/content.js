@@ -28,11 +28,14 @@ let storeName = (product.store === 'amz') ? 'Amazon' : (product.store === 'ebay'
 
 // Modify price info text HTML
 const originalText = document.querySelector(divSamePrice).innerText;
+const spinner = `<div id="vt-spinner" class="sk-chase"><div class="sk-chase-dot"></div><div class="sk-chase-dot"></div><div class="sk-chase-dot"></div><div class="sk-chase-dot"></div><div class="sk-chase-dot"></div><div class="sk-chase-dot"></div></div>`;
 const infoHTML = `
-  <div id="vt-status"><div id="vt-spinner" class="sk-chase"><div class="sk-chase-dot"></div><div class="sk-chase-dot"></div><div class="sk-chase-dot"></div><div class="sk-chase-dot"></div><div class="sk-chase-dot"></div><div class="sk-chase-dot"></div></div></div>
+  <div id="vt-status">${spinner}</div>
   <span id="vt-splabel" style="float: left; margin-left: 5px; opacity: 0.6;">${originalText}</span>
 `;
 document.querySelector(divSamePrice).innerHTML = infoHTML;
+const statusDiv = document.getElementById('vt-status');
+const labelNode = document.getElementById('vt-splabel');
 
 // Get price and clean currency symbol
 function getPriceFrom(cssID){
@@ -65,6 +68,11 @@ const icon = {
     </svg>`
 }
 
+function setLabel(text, url) {
+  labelNode.style.opacity = '1';
+  labelNode.innerHTML = `<a href="${url ? url : '#'}" target="_blank" title="Ver el producto en la tienda de origen">${text}</a>`;
+}
+
 // Colors
 const RIGHT = '#588f22'; // green
 const WRONG = '#8f2f22'; // darkred
@@ -80,9 +88,6 @@ function handleResponse(response){
   // if not displaying in dollars, add symbol
   let priceInDollars = document.querySelector('.webcurrency_off .dollar_price');
   let currencySign = (!priceInDollars) ? "U$S " : "";
-
-  const labelNode = document.getElementById('vt-splabel');
-  const statusDiv = document.getElementById('vt-status');
 
   let label = originalText;
   let statusMark;
@@ -152,10 +157,8 @@ function handleResponse(response){
   }
 
   // Update text and styling
-  labelNode.style.opacity = '1';
-  labelNode.innerHTML = `<a href="${response.url}" target="_blank" title="Ver el producto en la tienda de origen">${label}</a>`;
+  setLabel(label, response.url);
   cssRules += ` #vt-splabel, #vt-splabel a {color:${textColor};} #product-price-clone .price {${priceStyle}}`;
-  document.getElementById('vt-spinner').remove();
   statusDiv.innerHTML = statusMark;
 
   appendStyle(cssRules);
@@ -164,13 +167,16 @@ function handleResponse(response){
 // if options, watch for selection change
 if (optionsDiv) {
   let observer = new MutationObserver(function(mutations) {
-    if (skuDiv.value !== product.sku) {
+    console.info(mutations, skuDiv.innerText, product.sku)
+    if (skuDiv.innerText !== product.sku) {
+      statusDiv.innerHTML = spinner;
+      setLabel('Analizando...');
       fillProductData();
       chrome.runtime.sendMessage(product, handleResponse);
     }
   });
 
-  observer.observe(skuDiv, {childList: true, characterData: true});
+  observer.observe(skuDiv, {attributes: true, childList: true, characterData: true});
 }
 
 // Send product to background
