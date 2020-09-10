@@ -59,11 +59,17 @@ function getPriceFrom(cssID){
 	return Number(price);
 }
 
-function appendStyle(rules){
-  let s = document.createElement('style');
-  s.setAttribute('type', 'text/css');
-  s.appendChild(document.createTextNode(rules));
-  document.head.appendChild(s);
+function updateStyle(rules){
+  const styleVT = document.getElementById('vt-styling');
+  if (styleVT) {
+    styleVT.innerHTML = rules;
+  } else {
+    let s = document.createElement('style');
+    s.setAttribute('type', 'text/css');
+    s.setAttribute('id', 'vt-styling');
+    s.appendChild(document.createTextNode(rules));
+    document.head.appendChild(s);
+  }
 }
 
 // Colors
@@ -75,15 +81,27 @@ const WARN  = '#cf8525'; // orange
  * Display info about price correctness
  * @param {object} Object - At least `label` have to be present
  */
-function showStatus({url, label, color, opacity, mark, priceStyle, css}) {
+function showStatus({url, label, color, opacity, mark, priceStyle, diffDisplayed}) {
   statusDiv.innerHTML = (mark) ? mark : icon.spinner;
   labelNode.style.opacity = (opacity) ? String(opacity) : '1';
   labelNode.innerHTML = `<a href="${url ? url : '#'}" target="_blank" title="Ver el producto en la tienda de origen">${label}</a>`;
 
-  if (!css) css = '';
+  let css = '';
   if (priceStyle) css += ` #product-price-clone .price {${priceStyle}}`;
+  if (diffDisplayed) css += `
+    #product-price-clone .price:after {
+      content: "${diffDisplayed}+";
+      font-weight: bold; padding-left: 8px; font-size: 26px;
+      padding: 0px 8px;
+      font-size: 22px;
+      background: white;
+      border-radius: 4px;
+      box-shadow: 0 1px 1px 4px #7777770a;
+    }
+  `;
+
   css += ` #vt-splabel, #vt-splabel a {color:${(color) ? color : 'black'};}`;
-  appendStyle(css);
+  updateStyle(css);
 }
 
 /**
@@ -136,17 +154,7 @@ function handleResponse(response){
       info.priceStyle += warnedPrice;
       info.color = WRONG;
       info.mark = icon.cross;
-      info.css += `
-        #product-price-clone .price:after {
-          content: "${currencySign + response.diff.toFixed(0)}+";
-          font-weight: bold; padding-left: 8px; font-size: 26px;
-          padding: 0px 8px;
-          font-size: 22px;
-          background: white;
-          border-radius: 4px;
-          box-shadow: 0 1px 1px 4px #7777770a;
-        }
-      `;
+      info.diffDisplayed = `${currencySign + response.diff.toFixed(0)}+`;
 
       document.getElementById('finalprice_producto_ajax').title = 'Precio en TiendaMia';
       document.querySelector('#product-price-clone .price').title = `U$S ${product.price - response.diff} en ${storeName}`;
