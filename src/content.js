@@ -1,5 +1,6 @@
 const skuDiv = document.getElementById("SKU_producto_ajax");
 const optionsDiv = document.getElementById('product-options-wrapper');
+const priceBoxWrap = document.querySelector('.product-price-box-wrap');
 
 // Get product info
 let product = {
@@ -43,7 +44,6 @@ const icon = {
 
 // Modify price info text HTML
 const originalText = document.querySelector(divSamePrice).innerText;
-// const spinner = `<div id="vt-spinner" class="sk-chase"><div class="sk-chase-dot"></div><div class="sk-chase-dot"></div><div class="sk-chase-dot"></div><div class="sk-chase-dot"></div><div class="sk-chase-dot"></div><div class="sk-chase-dot"></div></div>`;
 const infoHTML = `
   <div id="vt-status">${icon.spinner}</div>
   <span id="vt-splabel" style="float: left; margin-left: 5px; opacity: 0.6;">${originalText}</span>
@@ -154,7 +154,7 @@ function handleResponse(response){
       info.priceStyle += warnedPrice;
       info.color = WRONG;
       info.mark = icon.cross;
-      info.diffDisplayed = `${currencySign + response.diff.toFixed(0)}+`;
+      info.diffDisplayed = `${currencySign + response.diff.toFixed(0)}`;
 
       document.getElementById('finalprice_producto_ajax').title = 'Precio en TiendaMia';
       document.querySelector('#product-price-clone .price').title = `U$S ${product.price - response.diff} en ${storeName}`;
@@ -180,8 +180,8 @@ function handleResponse(response){
 // if options, watch for selection change
 if (optionsDiv) {
   let observer = new MutationObserver(function(mutations) {
-    console.info(mutations, skuDiv.innerText, product.sku)
-    if (skuDiv.innerText !== product.sku) {
+    console.info(skuDiv.innerText, product.sku)
+    if ((skuDiv.innerText !== product.sku) && priceBoxWrap.className.indexOf('hidden') === -1) {
       showStatus({label: 'Analizando...', opacity: 0.6});
       fillProductData();
       chrome.runtime.sendMessage(product, handleResponse);
@@ -192,8 +192,7 @@ if (optionsDiv) {
 }
 
 // Send product to background
-let productViewPage = ["/producto?", "/e-product?", "/productow?"];
-if (productViewPage.some(el => document.baseURI.includes(el))) {
+if (document.baseURI.match(/\/(producto|e-product|productow)\?/g)) {
   console.log("Request check");
   chrome.runtime.sendMessage(product, handleResponse);
 }
