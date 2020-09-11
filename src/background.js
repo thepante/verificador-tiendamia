@@ -10,10 +10,13 @@ function getProps(store){
       props.priceDiv = "#priceblock_ourprice";
       props.asUsedDiv = "#usedBuySection";
       props.withoutStock = "#outOfStock";
+      props.altListing = "#availability span.a-declarative a";
+      props.altListingURL = "https://www.amazon.com/gp/offer-listing/";
       break;
     case 'ebay':
       props.url = "https://www.ebay.com/itm/";
       props.priceDiv = "#prcIsum";
+      props.altPriceDiv = "#finalPrc";
       break;
     case 'wrt':
       props.url = "https://www.walmart.com/ip/";
@@ -63,8 +66,12 @@ const analyzeThis = async function(product){
 
   let $html;
 
+  const findNode = function(selector){
+    return artoo.scrapeOne($html.find(selector));
+  }
+
   const getPriceFrom = function(node){
-    let divPrice = artoo.scrape($html.find(node))[0];
+    let divPrice = findNode(node);
     divPrice = divPrice.match(/\b\d[\d,.]*\b/g);
     divPrice.forEach(removeCommas);
     function removeCommas(e, i){ divPrice[i] = divPrice[i].replace(',','')};
@@ -78,10 +85,6 @@ const analyzeThis = async function(product){
     let diff = product.price - priceFromStore;
     console.log(product.sku, '→ Original/highest:', priceFromStore);
     return Number(diff.toFixed(2));
-  }
-
-  const findNode = function(selector){
-    return artoo.scrape($html.find(selector))[0];
   }
 
   const store = getProps(product.store);
