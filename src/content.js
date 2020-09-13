@@ -109,7 +109,7 @@ function showStatus({url, label, color, opacity, mark, priceStyle, diffDisplayed
  * @param {object} response - Response from background
  */
 function handleResponse(response){
-  console.log("→ Response: ", response);
+  console.table([{...product, ...response}]);
 
   // if not displaying in dollars, add symbol
   let priceInDollars = document.querySelector('.webcurrency_off .dollar_price');
@@ -157,7 +157,7 @@ function handleResponse(response){
       info.diffDisplayed = `${currencySign + response.diff.toFixed(0)}`;
 
       document.getElementById('finalprice_producto_ajax').title = 'Precio en TiendaMia';
-      document.querySelector('#product-price-clone .price').title = `U$S ${product.price - response.diff} en ${storeName}`;
+      document.querySelector('#product-price-clone .price').title = `U$S ${(product.price - response.diff).toFixed(2)} en ${storeName}`;
 
     } else {
       // All right, same price
