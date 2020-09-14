@@ -10,13 +10,20 @@ function getProps(store){
       props.priceDiv = "#priceblock_ourprice";
       props.asUsedDiv = "#usedBuySection";
       props.withoutStock = "#outOfStock";
-      props.altListing = "#availability span.a-declarative a";
-      props.altListingURL = "https://www.amazon.com/gp/offer-listing/";
+      props.altPage = {
+        trigger: "#availability span.a-declarative a",
+        element: ".olpPriceColumn .olpOfferPrice",
+        url: "https://www.amazon.com/gp/offer-listing/",
+      }
       break;
     case 'ebay':
       props.url = "https://www.ebay.com/itm/";
       props.priceDiv = "#prcIsum";
-      props.altPriceDiv = "#finalPrc";
+      props.searchByRegex = {
+        trigger: "#finalPrc",
+        element: "#JSDF",
+        expression: /(binPriceOnly":"|"bp":"US\s\$)(.*?)"/,
+      }
       break;
     case 'wrt':
       props.url = "https://www.walmart.com/ip/";
@@ -71,13 +78,13 @@ const analyzeThis = async function(product){
   }
 
   const getPriceFrom = function(node){
-    let divPrice = findNode(node);
-    divPrice = divPrice.match(/\b\d[\d,.]*\b/g);
-    divPrice.forEach(removeCommas);
-    function removeCommas(e, i){ divPrice[i] = divPrice[i].replace(',','')};
+    let priceElement = findNode(node);
+    priceElement = priceElement.match(/\b\d[\d,.]*\b/g);
+    priceElement.forEach(removeCommas);
+    function removeCommas(e, i){ priceElement[i] = priceElement[i].replace(',','')};
 
     // Array of price(s) collected - returns the highest
-    return Math.max.apply(Math, divPrice.map(Number));
+    return Math.max.apply(Math, priceElement.map(Number));
   }
 
   const getDiffFrom = function(node){
@@ -89,7 +96,7 @@ const analyzeThis = async function(product){
 
   const store = getProps(product.store);
   const productURL = store.url + product.sku;
-  const storeProductPage = await getProductPage(productURL);
+  let storeProductPage = await getProductPage(productURL);
 
   let result = {};
 
@@ -102,7 +109,20 @@ const analyzeThis = async function(product){
     if (priceNode != null) {
       result.diff = getDiffFrom(store.priceDiv);
     }
-    // If got not main node, try with 'used' div
+    // Case: search by regex in certain element
+    else if (store.searchByRegex && findNode(store.searchByRegex.trigger) != null) {
+      console.log(productURL);
+      try {
+        let element = artoo.scrapeOne($html.find(store.searchByRegex.element));
+        let found = element.match(store.searchByRegex.expression)[2];
+        result.diff = Number(product.price) - Number(found);
+        console.log("Regex Match:", found);
+      } catch {
+        console.log(product.sku, "→ Triggered regex search but wasn't found");
+        result.error = 'notfound';
+      }
+    }
+    // Else try with 'used' div
     else if (findNode(store.asUsedDiv)) {
       console.log(product.sku, "→ Detected as used");
       result.diff = getDiffFrom(store.asUsedDiv);
