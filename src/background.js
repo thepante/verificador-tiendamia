@@ -8,6 +8,7 @@ function getProps(store){
     case 'amz':
       props.url = "https://www.amazon.com/dp/";
       props.priceDiv = "#priceblock_ourprice";
+      props.priceDivAlt = "#priceblock_saleprice";
       props.asUsedDiv = "#usedBuySection";
       props.withoutStock = "#outOfStock";
       props.altPage = {
@@ -103,11 +104,46 @@ const analyzeThis = async function(product){
   if (storeProductPage.status === 'ok') {
     $html = artoo.helpers.jquerify(storeProductPage.data);
     const priceNode = findNode(store.priceDiv);
-    // console.log("priceDiv", priceNode);
+    console.log("priceDiv", priceNode);
 
     // If main price div is found
     if (priceNode != null) {
       result.diff = getDiffFrom(store.priceDiv);
+    }
+    else if (findNode(store.priceDivAlt)) {
+      result.diff = getDiffFrom(store.priceDivAlt);
+    }
+    // Alternative listing page. ATM: amz
+    else if (store.altPage && findNode(store.altPage.trigger)) {
+      console.log(product.sku, "Alternative page load");
+      let altPageUrl = store.altPage.url + product.sku + '?condition=new';
+
+      storeProductPage = await getProductPage(altPageUrl);
+      $html = artoo.helpers.jquerify(storeProductPage.data);
+
+      let pricesList = artoo.scrape($html.find(store.altPage.element))
+      for (let i = 0; i < pricesList.length; i++) pricesList[i] = Number(pricesList[i].replace('$', ''));
+
+      let tmPriceIndex = pricesList.indexOf(product.price);
+
+      let pricesHigher = pricesList.filter(price => price > product.price);
+      let pricesLower = pricesList.filter(price => price < product.price);
+
+      let diff = (tmPriceIndex !== -1) ? 0 : product.price - pricesList[0];
+
+      console.table({
+        sku: product.sku,
+        url: altPageUrl,
+        diff: diff,
+        all: pricesList,
+        higher: pricesHigher,
+        lower: pricesLower,
+      });
+
+      result.diff = diff;
+
+      if (pricesHigher.length > 0) result.higher = pricesHigher;
+      if (pricesLower.length > 0) result.lower = pricesLower;
     }
     // Case: search by regex in certain element
     else if (store.searchByRegex && findNode(store.searchByRegex.trigger) != null) {
