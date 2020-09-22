@@ -20,6 +20,7 @@ function getProps(store){
     case 'ebay':
       props.url = "https://www.ebay.com/itm/";
       props.priceDiv = "#prcIsum";
+      props.priceDivAlt = "#mm-saleDscPrc";
       props.searchByRegex = {
         trigger: "#finalPrc",
         element: "#JSDF",
@@ -28,7 +29,7 @@ function getProps(store){
       break;
     case 'wrt':
       props.url = "https://www.walmart.com/ip/";
-      props.priceDiv = ".price-group";
+      props.priceDiv = "#price";
       break;
   }
   return props;
@@ -121,8 +122,11 @@ const analyzeThis = async function(product){
       storeProductPage = await getProductPage(altPageUrl);
       $html = artoo.helpers.jquerify(storeProductPage.data);
 
-      let pricesList = artoo.scrape($html.find(store.altPage.element))
-      for (let i = 0; i < pricesList.length; i++) pricesList[i] = Number(pricesList[i].replace('$', ''));
+      let pricesList = artoo.scrape($html.find(store.altPage.element));
+
+      for (let i = 0; i < pricesList.length; i++) {
+        pricesList[i] = Number(pricesList[i].replace('$', ''));
+      }
 
       let tmPriceIndex = pricesList.indexOf(product.price);
 
