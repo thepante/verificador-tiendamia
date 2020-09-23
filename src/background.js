@@ -3,36 +3,40 @@ require("regenerator-runtime/runtime");
 var artoo = require('artoo-js');
 
 function getProps(store){
-  let props = {};
-  switch (store){
-    case 'amz':
-      props.url = "https://www.amazon.com/dp/";
-      props.priceDiv = "#priceblock_ourprice";
-      props.priceDivAlt = "#priceblock_saleprice";
-      props.asUsedDiv = "#usedBuySection";
-      props.withoutStock = "#outOfStock";
-      props.altPage = {
-        trigger: "#availability span.a-declarative a",
-        element: ".olpPriceColumn .olpOfferPrice",
-        url: "https://www.amazon.com/gp/offer-listing/",
-      }
-      break;
-    case 'ebay':
-      props.url = "https://www.ebay.com/itm/";
-      props.priceDiv = "#prcIsum";
-      props.priceDivAlt = "#mm-saleDscPrc";
-      props.searchByRegex = {
-        trigger: "#finalPrc",
-        element: "#JSDF",
-        expression: /(binPriceOnly":"|"bp":"US\s\$)(.*?)"/,
-      }
-      break;
-    case 'wrt':
-      props.url = "https://www.walmart.com/ip/";
-      props.priceDiv = "#price";
-      break;
-  }
-  return props;
+  const amazon = {
+    url: "https://www.amazon.com/dp/",
+    selector: {
+      main: '#priceblock_ourprice',
+      alt: '#priceblock_saleprice',
+      used: '#usedBuySection',
+      nostock: '#outOfStock',
+    },
+    altPage: {
+      trigger: "#availability span.a-declarative a",
+      element: ".olpPriceColumn .olpOfferPrice",
+      url: "https://www.amazon.com/gp/offer-listing/",
+    },
+  };
+  const ebay = {
+    url: "https://www.ebay.com/itm/",
+    selector: {
+      main: '#prcIsum',
+      alt: '#mm-saleDscPrc',
+    },
+    searchByRegex: {
+      trigger: "#finalPrc",
+      element: "#JSDF",
+      expression: /(binPriceOnly":"|"bp":"US\s\$)(.*?)"/,
+    },
+  };
+  const walmart = {
+    url: "https://www.walmart.com/ip/",
+    selector: {
+      main: '#price',
+    },
+  };
+
+  return (store == 'amz') ? amazon : (store == 'ebay') ? ebay : walmart;
 }
 
 /**
@@ -104,15 +108,15 @@ const analyzeThis = async function(product){
 
   if (storeProductPage.status === 'ok') {
     $html = artoo.helpers.jquerify(storeProductPage.data);
-    const priceNode = findNode(store.priceDiv);
+    const priceNode = findNode(store.selector.main);
     console.log("priceDiv", priceNode);
 
     // If main price div is found
     if (priceNode != null) {
-      result.diff = getDiffFrom(store.priceDiv);
+      result.diff = getDiffFrom(store.selector.main);
     }
-    else if (findNode(store.priceDivAlt)) {
-      result.diff = getDiffFrom(store.priceDivAlt);
+    else if (findNode(store.selector.alt)) {
+      result.diff = getDiffFrom(store.selector.alt);
     }
     // Alternative listing page. ATM: amz
     else if (store.altPage && findNode(store.altPage.trigger)) {
@@ -163,13 +167,13 @@ const analyzeThis = async function(product){
       }
     }
     // Else try with 'used' div
-    else if (findNode(store.asUsedDiv)) {
+    else if (findNode(store.selector.used)) {
       console.log(product.sku, "→ Detected as used");
-      result.diff = getDiffFrom(store.asUsedDiv);
+      result.diff = getDiffFrom(store.selector.used);
       result.used = true;
     }
     // Else, check if its out of stock
-    else if (findNode(store.withoutStock)) {
+    else if (findNode(store.selector.nostock)) {
       result.error = 'nostock';
       console.log(product.sku, "→ Product without stock");
     }
