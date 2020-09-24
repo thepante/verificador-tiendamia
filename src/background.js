@@ -44,7 +44,7 @@ function getProps(store){
  * @param {string} url - Full address to the product page
  * @return {object} Containing `status` and `data`
  */
-const getProductPage = async function(url){
+const loadProductPage = async function(url){
   let content = {};
   return await fetch(url)
   .then(function(response) {
@@ -77,10 +77,10 @@ const analyzeThis = async function(product){
     return {error: "noprice"};
   }
 
-  let $html;
+  let html;
 
   const findNode = function(selector){
-    return artoo.scrapeOne($html.find(selector));
+    return artoo.scrapeOne(html.find(selector));
   }
 
   const getPriceFrom = function(node){
@@ -102,12 +102,12 @@ const analyzeThis = async function(product){
 
   const store = getProps(product.store);
   const productURL = store.url + product.sku;
-  let storeProductPage = await getProductPage(productURL);
+  let productPage = await loadProductPage(productURL);
 
   let result = {};
 
-  if (storeProductPage.status === 'ok') {
-    $html = artoo.helpers.jquerify(storeProductPage.data);
+  if (productPage.status === 'ok') {
+    html = artoo.helpers.jquerify(productPage.data);
     const priceNode = findNode(store.selector.main);
     console.log("priceDiv", priceNode);
 
@@ -121,12 +121,12 @@ const analyzeThis = async function(product){
     // Alternative listing page. ATM: amz
     else if (store.altPage && findNode(store.altPage.trigger)) {
       console.log(product.sku, "Alternative page load");
+
       let altPageUrl = store.altPage.url + product.sku + '?condition=new';
+      productPage = await loadProductPage(altPageUrl);
+      html = artoo.helpers.jquerify(productPage.data);
 
-      storeProductPage = await getProductPage(altPageUrl);
-      $html = artoo.helpers.jquerify(storeProductPage.data);
-
-      let pricesList = artoo.scrape($html.find(store.altPage.element));
+      let pricesList = artoo.scrape(html.find(store.altPage.element));
 
       for (let i = 0; i < pricesList.length; i++) {
         pricesList[i] = Number(pricesList[i].replace('$', ''));
@@ -157,7 +157,7 @@ const analyzeThis = async function(product){
     else if (store.searchByRegex && findNode(store.searchByRegex.trigger) != null) {
       console.log(productURL);
       try {
-        let element = artoo.scrapeOne($html.find(store.searchByRegex.element));
+        let element = artoo.scrapeOne(html.find(store.searchByRegex.element));
         let found = element.match(store.searchByRegex.expression)[2];
         result.diff = Number(product.price) - Number(found);
         console.log("Regex Match:", found);
@@ -186,7 +186,7 @@ const analyzeThis = async function(product){
   // If url fetch failed
   else {
     result.error = 'fetcherror';
-    console.log("Fetch failed:", storeProductPage.error);
+    console.log("Fetch failed:", productPage.error);
   }
 
   // Return conclusion
