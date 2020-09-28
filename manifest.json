@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "Verificador de precios de Tiendamia",
     "description": "Comprueba los precios de los productos que visualizas en Tiendamia",
-    "version": "0.2.3",
+    "version": "0.3.0",
     "content_scripts": [
       {
         "matches": ["https://tiendamia.com/*"],
