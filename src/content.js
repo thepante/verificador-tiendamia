@@ -53,8 +53,8 @@ const statusDiv = document.getElementById('vt-status');
 const labelNode = document.getElementById('vt-splabel');
 
 // Get price and clean currency symbol
-function getPriceFrom(cssID){
-	let price = document.getElementById(cssID).innerText;
+function getPriceFrom(id) {
+  let price = document.getElementById(id).innerText;
 	price = price.match(/[+-]?\d+(?:\.\d+)?/g)[0];
 	return Number(price);
 }
@@ -144,13 +144,14 @@ function handleResponse(response){
         info.label = 'Producto sin stock en ' + storeName;
         break;
       case 'fetcherror':
-        console.log("Original store wasn't loaded so checking failed from the go to");
+        info.label = 'No se pudo comprobar el precio';
+        console.log("Original store wasn't loaded so checking failed from the go");
         break;
     }
 
   } else if ('diff' in response){
     if (response.diff > 0) {
-      info.label = 'No es el mismo precio que en ' + storeName;
+      info.label = `No es el mismo precio que en ${storeName}`;
       info.priceStyle += warnedPrice;
       info.color = WRONG;
       info.mark = icon.cross;
