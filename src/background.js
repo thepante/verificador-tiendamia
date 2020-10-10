@@ -107,12 +107,19 @@ const analyzeThis = async function(product){
   let result = {};
 
   if (productPage.status === 'ok') {
+    await searchDiff();
+  } else {
+    result.error = 'fetcherror';
+    console.log("Fetch failed:", productPage.error);
+  }
+
+  /** Search for a price to calc the diff */
+  async function searchDiff() {
     html = artoo.helpers.jquerify(productPage.data);
-    const priceNode = findNode(store.selector.main);
-    console.log("priceDiv", priceNode);
 
     // If main price div is found
-    if (priceNode != null) {
+    if (findNode(store.selector.main) != null) {
+      console.log(product.sku, "→ selector.main", findNode(store.selector.main));
       result.diff = getDiffFrom(store.selector.main);
     }
     else if (findNode(store.selector.alt)) {
@@ -127,13 +134,9 @@ const analyzeThis = async function(product){
       html = artoo.helpers.jquerify(productPage.data);
 
       let pricesList = artoo.scrape(html.find(store.altPage.element));
-
-      for (let i = 0; i < pricesList.length; i++) {
-        pricesList[i] = Number(pricesList[i].replace('$', ''));
-      }
+      pricesList = pricesList.map(price => Number(price.replace('$', '')));
 
       let tmPriceIndex = pricesList.indexOf(product.price);
-
       let pricesHigher = pricesList.filter(price => price > product.price);
       let pricesLower = pricesList.filter(price => price < product.price);
 
@@ -143,9 +146,9 @@ const analyzeThis = async function(product){
         sku: product.sku,
         url: altPageUrl,
         diff: diff,
-        all: pricesList,
-        higher: pricesHigher,
-        lower: pricesLower,
+        all: [pricesList],
+        higher: [pricesHigher],
+        lower: [pricesLower],
       });
 
       result.diff = diff;
@@ -155,7 +158,7 @@ const analyzeThis = async function(product){
     }
     // Case: search by regex in certain element
     else if (store.searchByRegex && findNode(store.searchByRegex.trigger) != null) {
-      console.log(productURL);
+      console.log(productURL, 'store.searchByRegex');
       try {
         let element = artoo.scrapeOne(html.find(store.searchByRegex.element));
         let found = element.match(store.searchByRegex.expression)[2];
@@ -182,11 +185,6 @@ const analyzeThis = async function(product){
       result.error = 'notfound';
       console.log(product.sku, "→ Price in store not found");
     }
-  }
-  // If url fetch failed
-  else {
-    result.error = 'fetcherror';
-    console.log("Fetch failed:", productPage.error);
   }
 
   // Return conclusion
