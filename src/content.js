@@ -2,20 +2,22 @@ const skuDiv = document.getElementById("SKU_producto_ajax");
 const optionsDiv = document.getElementById('product-options-wrapper');
 const priceBoxWrap = document.querySelector('.product-price-box-wrap');
 
-// Get product info
-let product = {
+// Product main info
+const product = {
   sku: null,
   price: null,
   store: null,
 };
 
+// Fill product info through this function because its called at initial page load
+// but also when a product option is selected (different SKU)
 function fillProductData() {
   product.store = document.baseURI.match(/(\?)([^\=]+)/)[2];
   product.price = getPriceFrom("finalprice_producto_ajax");
   product.sku = skuDiv.innerText;
-
   console.info(product);
 }
+
 fillProductData();
 
 // Assign correct div for 'same price as' text
@@ -23,6 +25,26 @@ let divSamePrice = (product.store === 'amz') ? ".same-price-amz" : "#product-pri
 
 // Assign store name by its code
 let storeName = (product.store === 'amz') ? 'Amazon' : (product.store === 'ebay') ? 'eBay' : 'Walmart';
+
+// Colors
+const colors = {
+  right: '#588f22', // green
+  wrong: '#8f2f22', // darkred
+  warn:  '#cf8525', // orange
+}
+
+// Labels texts
+const texts = {
+    viewInStore: "Ver el producto en la tienda de origen",
+      samePrice: `Mismo precio que en ${storeName}`,
+   notSamePrice: `No es el mismo precio que en ${storeName}`,
+  priceNotFound: `No se encontró el precio en ${storeName}`,
+        noStock: `Producto sin stock en ${storeName}`,
+         isUsed: "Figura como usado",
+     cantVerify: "No se pudo comprobar el precio",
+      priceInTM: "Precio en TiendaMia",
+      analyzing: "Analizando...",
+}
 
 const icon = {
   tick: `
@@ -59,6 +81,10 @@ function getPriceFrom(id) {
 	return Number(price);
 }
 
+/**
+ * Set CSS rules
+ * @param {object} rules - String containing CSS rules
+ */
 function updateStyle(rules){
   const styleVT = document.getElementById('vt-styling');
   if (styleVT) {
@@ -72,11 +98,6 @@ function updateStyle(rules){
   }
 }
 
-// Colors
-const RIGHT = '#588f22'; // green
-const WRONG = '#8f2f22'; // darkred
-const WARN  = '#cf8525'; // orange
-
 /**
  * Display info about price correctness
  * @param {object} Object - At least `label` have to be present
@@ -84,7 +105,7 @@ const WARN  = '#cf8525'; // orange
 function showStatus({url, label, color, opacity, mark, priceStyle, diffDisplayed}) {
   statusDiv.innerHTML = (mark) ? mark : icon.spinner;
   labelNode.style.opacity = (opacity) ? String(opacity) : '1';
-  labelNode.innerHTML = `<a href="${url ? url : '#'}" target="_blank" title="Ver el producto en la tienda de origen">${label}</a>`;
+  labelNode.innerHTML = `<a href="${url ? url : '#'}" target="_blank" title="${texts.viewInStore}">${label}</a>`;
 
   let css = '';
   if (priceStyle) css += ` #product-price-clone .price {${priceStyle}}`;
@@ -111,7 +132,7 @@ function showStatus({url, label, color, opacity, mark, priceStyle, diffDisplayed
 function handleResponse(response){
   console.table([{...product, ...response}]);
 
-  // if not displaying in dollars, add symbol
+  // if not displaying in dollars, add USD symbol
   let priceInDollars = document.querySelector('.webcurrency_off .dollar_price');
   let currencySign = (!priceInDollars) ? "U$S " : "";
 
@@ -126,64 +147,64 @@ function handleResponse(response){
   };
 
   if (response.error){
-    info.color = WARN;
     info.priceStyle += dimmedPrice;
+    info.color = colors.warn;
     info.mark = icon.warn;
 
     switch(response.error){
       case 'noprice':
+        // TODO: in case the origin store has price listed: notify and display here
         console.log("This product has not price so there's nothing to check...");
-        console.log("TODO: change this action to show (if) the price from store");
         break;
       case 'notfound':
         console.log("Can't verify price - Price in original store not found");
-        info.label = 'No se encontró el precio en ' + storeName;
+        info.label = texts.priceNotFound;
         break;
       case 'nostock':
         // console.log("Original store has no stock");
-        info.label = 'Producto sin stock en ' + storeName;
+        info.label = texts.noStock;
         break;
       case 'fetcherror':
-        info.label = 'No se pudo comprobar el precio';
-        console.log("Original store wasn't loaded so checking failed from the go");
+        info.label = texts.cantVerify;
+        console.log("Original store wasn't loaded so checking failed from the get go");
         break;
     }
 
   } else if ('diff' in response){
     if (response.diff > 0) {
-      info.label = `No es el mismo precio que en ${storeName}`;
+      info.label = texts.notSamePrice;
       info.priceStyle += warnedPrice;
-      info.color = WRONG;
+      info.color = colors.wrong;
       info.mark = icon.cross;
       info.diffDisplayed = `${currencySign + response.diff.toFixed(0)}`;
 
-      document.getElementById('finalprice_producto_ajax').title = 'Precio en TiendaMia';
+      document.getElementById('finalprice_producto_ajax').title = texts.priceInTM;
       document.querySelector('#product-price-clone .price').title = `U$S ${(product.price - response.diff).toFixed(2)} en ${storeName}`;
 
     } else {
       // All right, same price
-      info.label = 'Mismo precio que en ' + storeName;
-      info.color = RIGHT;
+      info.label = texts.samePrice;
+      info.color = colors.right;
       info.mark = icon.tick;
     }
   }
 
   if (response.used){
-    console.log("Detected this product in the original store published as used");
-    info.label += '<br>Figura como usado';
-    info.color = WARN;
+    console.log("Detected this product in the origin store published as used");
+    info.label += '<br>' + texts.isUsed;
+    info.color = colors.warn;
   }
 
   // Update status
   showStatus(info);
 };
 
-// if options, watch for selection change
+// if product options, watch for selection change
 if (optionsDiv) {
   let observer = new MutationObserver(function(mutations) {
-    console.info(skuDiv.innerText, product.sku)
+    // console.info(skuDiv.innerText, product.sku)
     if ((skuDiv.innerText !== product.sku) && priceBoxWrap.className.indexOf('hidden') === -1) {
-      showStatus({label: 'Analizando...', opacity: 0.6});
+      showStatus({label: texts.analyzing, opacity: 0.6});
       fillProductData();
       chrome.runtime.sendMessage(product, handleResponse);
     }
