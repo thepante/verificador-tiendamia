@@ -2,8 +2,8 @@ require("regenerator-runtime/runtime");
 
 var artoo = require('artoo-js');
 
-function getProps(store){
-  const amazon = {
+const PROPS = {
+  amz: {
     url: "https://www.amazon.com/dp/",
     selector: {
       main: '#priceblock_ourprice',
@@ -16,8 +16,9 @@ function getProps(store){
       element: ".olpPriceColumn .olpOfferPrice",
       url: "https://www.amazon.com/gp/offer-listing/",
     },
-  };
-  const ebay = {
+  },
+
+  ebay: {
     url: "https://www.ebay.com/itm/",
     selector: {
       main: '#prcIsum',
@@ -28,15 +29,14 @@ function getProps(store){
       element: "#JSDF",
       expression: /(binPriceOnly":"|"bp":"US\s\$)(.*?)"/,
     },
-  };
-  const walmart = {
+  },
+
+  wrt: {
     url: "https://www.walmart.com/ip/",
     selector: {
       main: '#price',
     },
-  };
-
-  return (store == 'amz') ? amazon : (store == 'ebay') ? ebay : walmart;
+  },
 }
 
 /**
@@ -100,7 +100,7 @@ const analyzeThis = async function(product){
     return Number(diff.toFixed(2));
   }
 
-  const store = getProps(product.store);
+  const store = PROPS[product.store];
   const productURL = store.url + product.sku;
   let productPage = await loadProductPage(productURL);
 
@@ -119,7 +119,7 @@ const analyzeThis = async function(product){
 
     // If main price div is found
     if (findNode(store.selector.main) != null) {
-      console.log(product.sku, "→ selector.main", findNode(store.selector.main));
+      console.log(product.sku, "→ selector.main");
       result.diff = getDiffFrom(store.selector.main);
     }
     else if (findNode(store.selector.alt)) {
