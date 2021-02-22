@@ -13,8 +13,8 @@ const PROPS = {
     },
     altPage: {
       trigger: "#availability span.a-declarative a",
-      element: ".olpPriceColumn .olpOfferPrice",
-      url: "https://www.amazon.com/gp/offer-listing/",
+      element: ".a-price .a-offscreen",
+      url: "https://www.amazon.com/gp/aod/ajax/?filters=%257B%2522all%2522%253Atrue%252C%2522new%2522%253Atrue%257D&isonlyrenderofferlist=true&asin=",
     },
   },
 
@@ -86,8 +86,7 @@ const analyzeThis = async function(product){
   const getPriceFrom = function(node){
     let priceElement = findNode(node);
     priceElement = priceElement.match(/\b\d[\d,.]*\b/g);
-    priceElement.forEach(removeCommas);
-    function removeCommas(e, i){ priceElement[i] = priceElement[i].replace(',','')};
+    priceElement = priceElement.map(price => price.replace(',', ''));
 
     // Array of price(s) collected - returns the highest
     return Math.max.apply(Math, priceElement.map(Number));
@@ -129,32 +128,26 @@ const analyzeThis = async function(product){
     else if (store.altPage && findNode(store.altPage.trigger)) {
       console.log(product.sku, "Alternative page load");
 
-      let altPageUrl = store.altPage.url + product.sku + '?condition=new';
+      const altPageUrl = store.altPage.url + product.sku;
       productPage = await loadProductPage(altPageUrl);
       html = artoo.helpers.jquerify(productPage.data);
 
       let pricesList = artoo.scrape(html.find(store.altPage.element));
       pricesList = pricesList.map(price => Number(price.replace('$', '')));
 
-      let tmPriceIndex = pricesList.indexOf(product.price);
-      let pricesHigher = pricesList.filter(price => price > product.price);
-      let pricesLower = pricesList.filter(price => price < product.price);
-
-      let diff = (tmPriceIndex !== -1) ? 0 : product.price - pricesList[0];
+      const tmPriceIndex = pricesList.indexOf(product.price);
+      const diff = (tmPriceIndex !== -1) ? 0 : product.price - pricesList[0];
 
       console.table({
         sku: product.sku,
         url: altPageUrl,
         diff: diff,
         all: [pricesList],
-        higher: [pricesHigher],
-        lower: [pricesLower],
       });
 
       result.diff = diff;
 
-      if (pricesHigher.length > 0) result.higher = pricesHigher;
-      if (pricesLower.length > 0) result.lower = pricesLower;
+      if (pricesList.length > 1) result.all = pricesList;
     }
     // Case: search by regex in certain element
     else if (store.searchByRegex && findNode(store.searchByRegex.trigger) != null) {
