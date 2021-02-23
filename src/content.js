@@ -34,7 +34,8 @@ const colors = {
 }
 
 // Labels texts
-const texts = {
+const lang = {
+  es: {
     viewInStore: "Ver el producto en la tienda de origen",
       samePrice: `Mismo precio que en ${storeName}`,
    notSamePrice: `No es el mismo precio que en ${storeName}`,
@@ -44,7 +45,22 @@ const texts = {
      cantVerify: "No se pudo comprobar el precio",
       priceInTM: "Precio en TiendaMia",
       analyzing: "Analizando...",
+  },
+  pt: {
+    viewInStore: "Veja o produto na loja de origem",
+      samePrice: `Mesmo preço da ${storeName}`,
+   notSamePrice: `Não é o mesmo preço de ${storeName}`,
+  priceNotFound: `Preço não encontrado na ${storeName}`,
+        noStock: `Produto esgotado na ${storeName}`,
+         isUsed: "Está listado como usado",
+     cantVerify: "Preço não pôde ser verificado",
+      priceInTM: "Preço na TiendaMia",
+      analyzing: "Analisando...",
+  },
 }
+
+const isBrSite = document.baseURI.match(/tiendamia.com\/br/) != null;
+const texts = isBrSite ? lang.pt : lang.es;
 
 const icon = {
   tick: `
