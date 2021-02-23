@@ -6,7 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rm -rf addon && webpack && npm run copy:addon",
     "copy:addon": "cp manifest.json ./addon & cp ./src/style.css ./addon",
-    "start:firefox": "web-ext run --source-dir ./addon/",
+    "start:firefox": "web-ext run --source-dir ./addon/ --start-url 'about:debugging#/runtime/this-firefox'",
     "start:chromium": "web-ext run -t chromium --source-dir ./addon/",
     "pack": "web-ext build --source-dir=./addon --artifacts-dir=./",
     "zipsc": "zip -r sc-verificador-tiendamia src manifest.json package.json package-lock.json webpack.config.js"
