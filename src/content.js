@@ -1,6 +1,9 @@
-const skuDiv = document.getElementById("SKU_producto_ajax");
-const optionsDiv = document.getElementById('product-options-wrapper');
-const priceBoxWrap = document.querySelector('.product-price-box-wrap');
+const divs = {
+  sku: document.getElementById("SKU_producto_ajax"),
+  options: document.getElementById('product-options-wrapper'),
+  priceWrap: document.querySelector('.product-price-box-wrap'),
+  priceIsInUSD: document.querySelector('.webcurrency_off .dollar_price'),
+}
 
 // Product main info
 const product = {
@@ -14,7 +17,7 @@ const product = {
 function fillProductData() {
   product.store = document.baseURI.match(/(\?)([^\=]+)/)[2];
   product.price = getPriceFrom("finalprice_producto_ajax");
-  product.sku = skuDiv.innerText;
+  product.sku = divs.sku.innerText;
   console.info(product);
 }
 
@@ -36,26 +39,26 @@ const colors = {
 // Labels texts
 const lang = {
   es: {
-    viewInStore: "Ver el producto en la tienda de origen",
-      samePrice: `Mismo precio que en ${storeName}`,
-   notSamePrice: `No es el mismo precio que en ${storeName}`,
-  priceNotFound: `No se encontró el precio en ${storeName}`,
-        noStock: `Producto sin stock en ${storeName}`,
-         isUsed: "Figura como usado",
-     cantVerify: "No se pudo comprobar el precio",
-      priceInTM: "Precio en TiendaMia",
-      analyzing: "Analizando...",
+      viewInStore: "Ver el producto en la tienda de origen",
+        samePrice: `Mismo precio que en ${storeName}`,
+     notSamePrice: `No es el mismo precio que en ${storeName}`,
+    priceNotFound: `No se encontró el precio en ${storeName}`,
+          noStock: `Producto sin stock en ${storeName}`,
+           isUsed: "Figura como usado",
+       cantVerify: "No se pudo comprobar el precio",
+        priceInTM: "Precio en TiendaMia",
+        analyzing: "Analizando...",
   },
   pt: {
-    viewInStore: "Veja o produto na loja de origem",
-      samePrice: `Mesmo preço da ${storeName}`,
-   notSamePrice: `Não é o mesmo preço de ${storeName}`,
-  priceNotFound: `Preço não encontrado na ${storeName}`,
-        noStock: `Produto esgotado na ${storeName}`,
-         isUsed: "Está listado como usado",
-     cantVerify: "Preço não pôde ser verificado",
-      priceInTM: "Preço na TiendaMia",
-      analyzing: "Analisando...",
+      viewInStore: "Veja o produto na loja de origem",
+        samePrice: `Mesmo preço da ${storeName}`,
+     notSamePrice: `Não é o mesmo preço de ${storeName}`,
+    priceNotFound: `Preço não encontrado na ${storeName}`,
+          noStock: `Produto esgotado na ${storeName}`,
+           isUsed: "Está listado como usado",
+       cantVerify: "Preço não pôde ser verificado",
+        priceInTM: "Preço na TiendaMia",
+        analyzing: "Analisando...",
   },
 }
 
@@ -87,8 +90,8 @@ const infoHTML = `
   <span id="vt-splabel" style="float: left; margin-left: 5px; opacity: 0.6;">${originalText}</span>
 `;
 document.querySelector(divSamePrice).innerHTML = infoHTML;
-const statusDiv = document.getElementById('vt-status');
-const labelNode = document.getElementById('vt-splabel');
+divs.status = document.getElementById('vt-status');
+divs.label  = document.getElementById('vt-splabel');
 
 // Get price and clean currency symbol
 function getPriceFrom(id) {
@@ -119,9 +122,9 @@ function updateStyle(rules){
  * @param {object} Object - At least `label` have to be present
  */
 function showStatus({url, label, color, opacity, mark, priceStyle, diffDisplayed}) {
-  statusDiv.innerHTML = (mark) ? mark : icon.spinner;
-  labelNode.style.opacity = (opacity) ? String(opacity) : '1';
-  labelNode.innerHTML = `<a href="${url ? url : '#'}" target="_blank" title="${texts.viewInStore}">${label}</a>`;
+  divs.status.innerHTML = (mark) ? mark : icon.spinner;
+  divs.label.style.opacity = (opacity) ? String(opacity) : '1';
+  divs.label.innerHTML = `<a href="${url ? url : '#'}" target="_blank" title="${texts.viewInStore}">${label}</a>`;
 
   let css = '';
   if (priceStyle) css += ` #product-price-clone .price {${priceStyle}}`;
@@ -149,8 +152,7 @@ function handleResponse(response){
   console.table([{...product, ...response}]);
 
   // if not displaying in dollars, add USD symbol
-  let priceInDollars = document.querySelector('.webcurrency_off .dollar_price');
-  let currencySign = (!priceInDollars) ? "U$S " : "";
+  let currencySign = !divs.priceIsInUSD ? "U$S " : "";
 
   let dimmedPrice = 'opacity: 0.6;';
   let warnedPrice = 'color:#c83333;font-size:20px;';
@@ -216,17 +218,17 @@ function handleResponse(response){
 };
 
 // if product options, watch for selection change
-if (optionsDiv) {
+if (divs.options) {
   let observer = new MutationObserver(function(mutations) {
-    // console.info(skuDiv.innerText, product.sku)
-    if ((skuDiv.innerText !== product.sku) && priceBoxWrap.className.indexOf('hidden') === -1) {
+    // console.info(divs.sku.innerText, product.sku)
+    if ((divs.sku.innerText !== product.sku) && divs.priceWrap.className.indexOf('hidden') === -1) {
       showStatus({label: texts.analyzing, opacity: 0.6});
       fillProductData();
       chrome.runtime.sendMessage(product, handleResponse);
     }
   });
 
-  observer.observe(skuDiv, {childList: true, characterData: true});
+  observer.observe(divs.sku, {childList: true, characterData: true});
 }
 
 // Send product to background
