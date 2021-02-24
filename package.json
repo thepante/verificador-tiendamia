@@ -1,7 +1,7 @@
 {
   "name": "astm",
   "version": "1.0.0",
-  "description": "Evita que te cobren de más con los productos listados en Tiendamia",
+  "description": "Comprueba los precios de los productos listados en Tiendamia",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rm -rf addon && webpack && npm run copy:addon",
