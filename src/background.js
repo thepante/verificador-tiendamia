@@ -6,8 +6,9 @@ const PROPS = {
   amz: {
     url: "https://www.amazon.com/dp/",
     selector: {
-      main: '#priceblock_ourprice',
-      alt: '#priceblock_saleprice',
+      main: '#price_inside_buybox',
+      alt: '#priceblock_ourprice',
+      sale: '#priceblock_saleprice',
       used: '#usedBuySection',
       nostock: '#outOfStock',
     },
@@ -123,6 +124,9 @@ const analyzeThis = async function(product){
     }
     else if (findNode(store.selector.alt)) {
       result.diff = getDiffFrom(store.selector.alt);
+    }
+    else if (findNode(store.selector.sale)) {
+      result.diff = getDiffFrom(store.selector.sale);
     }
     // Alternative listing page. ATM: amz
     else if (store.altPage && findNode(store.altPage.trigger)) {
