@@ -6,16 +6,14 @@ const PROPS = {
   amz: {
     url: "https://www.amazon.com/dp/",
     selector: {
-      main: '#price_inside_buybox',
-      alt: '#priceblock_ourprice',
-      sale: '#priceblock_saleprice',
+      main: ['#price_inside_buybox', '#priceblock_ourprice', '#priceblock_saleprice'],
       used: '#usedBuySection',
       nostock: '#outOfStock',
     },
     altPage: {
-      trigger: "#availability span.a-declarative a",
-      element: ".a-price .a-offscreen",
-      url: "https://www.amazon.com/gp/aod/ajax/?filters=%257B%2522all%2522%253Atrue%252C%2522new%2522%253Atrue%257D&isonlyrenderofferlist=true&asin=",
+      trigger: ['#availability span.a-declarative a', '[data-action="show-all-offers-display"] .a-link-normal'],
+      element: '.a-price .a-offscreen',
+      url: 'https://www.amazon.com/gp/aod/ajax/?filters=%257B%2522all%2522%253Atrue%252C%2522new%2522%253Atrue%257D&isonlyrenderofferlist=true&asin=',
     },
   },
 
@@ -51,7 +49,7 @@ const loadProductPage = async function(url){
   .then(function(response) {
     if (response.ok) {
       return response.text();
-    }else{
+    } else {
       throw Error(response.statusText);
     }
   })
@@ -116,77 +114,77 @@ const analyzeThis = async function(product){
   /** Search for a price to calc the diff */
   async function searchDiff() {
     html = artoo.helpers.jquerify(productPage.data);
+    const mainSelector = store.selector.main.find(selector => findNode(selector));
 
-    // If main price div is found
-    if (findNode(store.selector.main) != null) {
-      console.log(product.sku, "→ selector.main");
-      result.diff = getDiffFrom(store.selector.main);
+    // Main method
+    if (mainSelector) {
+      console.log(product.sku, "→ selector:", mainSelector);
+      result.diff = getDiffFrom(mainSelector);
     }
-    else if (findNode(store.selector.alt)) {
-      result.diff = getDiffFrom(store.selector.alt);
-    }
-    else if (findNode(store.selector.sale)) {
-      result.diff = getDiffFrom(store.selector.sale);
-    }
-    // Alternative listing page. ATM: amz
-    else if (store.altPage && findNode(store.altPage.trigger)) {
-      console.log(product.sku, "Alternative page load");
+    else {
+      // In case price wasn't found through main selector
+      const altPageTrigger = store.altPage.trigger.find(selector => findNode(selector));
 
-      const altPageUrl = store.altPage.url + product.sku;
-      productPage = await loadProductPage(altPageUrl);
-      html = artoo.helpers.jquerify(productPage.data);
+      if (store.altPage && altPageTrigger) {
+        console.log(product.sku, "→ Alternative page load. Selector:", altPageTrigger);
 
-      let pricesList = artoo.scrape(html.find(store.altPage.element));
-      pricesList = pricesList.map(price => Number(price.replace('$', '')));
+        const altPageUrl = store.altPage.url + product.sku;
+        productPage = await loadProductPage(altPageUrl);
+        html = artoo.helpers.jquerify(productPage.data);
 
-      const tmPriceIndex = pricesList.indexOf(product.price);
-      const diff = (tmPriceIndex !== -1) ? 0 : product.price - pricesList[0];
+        let pricesList = artoo.scrape(html.find(store.altPage.element));
+        pricesList = pricesList.map(price => Number(price.replace('$', '')));
 
-      console.table({
-        sku: product.sku,
-        url: altPageUrl,
-        diff: diff,
-        all: [pricesList],
-      });
+        const tmPriceIndex = pricesList.indexOf(product.price);
+        const diff = (tmPriceIndex !== -1) ? 0 : product.price - pricesList[0];
 
-      result.diff = diff;
+        console.table({
+          sku: product.sku,
+          url: altPageUrl,
+          diff: diff,
+          all: [pricesList],
+        });
 
-      if (pricesList.length > 1) result.all = pricesList;
-    }
-    // Case: search by regex in certain element
-    else if (store.searchByRegex && findNode(store.searchByRegex.trigger) != null) {
-      console.log(productURL, 'store.searchByRegex');
-      try {
-        let element = artoo.scrapeOne(html.find(store.searchByRegex.element));
-        let found = element.match(store.searchByRegex.expression)[2];
-        result.diff = Number(product.price) - Number(found);
-        console.log("Regex Match:", found);
-      } catch {
-        console.log(product.sku, "→ Triggered regex search but wasn't found");
+        result.diff = diff;
+
+        if (pricesList.length > 1) result.all = pricesList;
+      }
+      // Case: search by regex in certain element
+      else if (store.searchByRegex && findNode(store.searchByRegex.trigger) != null) {
+        console.log(productURL, 'store.searchByRegex');
+        try {
+          let element = artoo.scrapeOne(html.find(store.searchByRegex.element));
+          let found = element.match(store.searchByRegex.expression)[2];
+          result.diff = Number(product.price) - Number(found);
+          console.log("Regex Match:", found);
+        } catch {
+          console.log(product.sku, "→ Triggered regex search but wasn't found");
+          result.error = 'notfound';
+        }
+      }
+      // Else try with 'used' div
+      else if (findNode(store.selector.used)) {
+        console.log(product.sku, "→ Detected as used");
+        result.diff = getDiffFrom(store.selector.used);
+        result.used = true;
+      }
+      // Else, check if its out of stock
+      else if (findNode(store.selector.nostock)) {
+        result.error = 'nostock';
+        console.log(product.sku, "→ Product without stock");
+      }
+      // Price wasn't found
+      else {
         result.error = 'notfound';
+        console.log(product.sku, "→ Price in store not found");
       }
     }
-    // Else try with 'used' div
-    else if (findNode(store.selector.used)) {
-      console.log(product.sku, "→ Detected as used");
-      result.diff = getDiffFrom(store.selector.used);
-      result.used = true;
-    }
-    // Else, check if its out of stock
-    else if (findNode(store.selector.nostock)) {
-      result.error = 'nostock';
-      console.log(product.sku, "→ Product without stock");
-    }
-    // Price wasn't found
-    else {
-      result.error = 'notfound';
-      console.log(product.sku, "→ Price in store not found");
-    }
+
   }
 
   // Return conclusion
   result.url = productURL;
-  console.log(product.sku, "→ Final result", result);
+  console.log(product.sku, "→ Result:", result);
   return result;
 }
 
