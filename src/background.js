@@ -5,13 +5,13 @@ var artoo = require('artoo-js');
 const PROPS = {
   amz: {
     url: "https://www.amazon.com/dp/",
-    selector: {
+    selectors: {
       main: ['#price_inside_buybox', '#priceblock_ourprice', '#priceblock_saleprice'],
       used: '#usedBuySection',
       nostock: '#outOfStock',
     },
     altPage: {
-      trigger: ['#availability span.a-declarative a', '[data-action="show-all-offers-display"] .a-link-normal'],
+      triggers: ['#availability span.a-declarative a', '[data-action="show-all-offers-display"] .a-link-normal'],
       element: '.a-price .a-offscreen',
       url: 'https://www.amazon.com/gp/aod/ajax/?filters=%257B%2522all%2522%253Atrue%252C%2522new%2522%253Atrue%257D&isonlyrenderofferlist=true&asin=',
     },
@@ -19,12 +19,11 @@ const PROPS = {
 
   ebay: {
     url: "https://www.ebay.com/itm/",
-    selector: {
-      main: '#prcIsum',
-      alt: '#mm-saleDscPrc',
+    selectors: {
+      main: ['#prcIsum', '#mm-saleDscPrc'],
     },
     searchByRegex: {
-      trigger: "#finalPrc",
+      triggers: "#finalPrc",
       element: "#JSDF",
       expression: /(binPriceOnly":"|"bp":"US\s\$)(.*?)"/,
     },
@@ -32,8 +31,8 @@ const PROPS = {
 
   wrt: {
     url: "https://www.walmart.com/ip/",
-    selector: {
-      main: '#price',
+    selectors: {
+      main: ['#price'],
     },
   },
 }
@@ -114,7 +113,7 @@ const analyzeThis = async function(product){
   /** Search for a price to calc the diff */
   async function searchDiff() {
     html = artoo.helpers.jquerify(productPage.data);
-    const mainSelector = store.selector.main.find(selector => findNode(selector));
+    const mainSelector = store.selectors.main.find(selector => findNode(selector));
 
     // Main method
     if (mainSelector) {
@@ -123,7 +122,7 @@ const analyzeThis = async function(product){
     }
     else {
       // In case price wasn't found through main selector
-      const altPageTrigger = store.altPage.trigger.find(selector => findNode(selector));
+      const altPageTrigger = store.altPage.triggers.find(selector => findNode(selector));
 
       if (store.altPage && altPageTrigger) {
         console.log(product.sku, "→ Alternative page load. Selector:", altPageTrigger);
@@ -150,7 +149,7 @@ const analyzeThis = async function(product){
         if (pricesList.length > 1) result.all = pricesList;
       }
       // Case: search by regex in certain element
-      else if (store.searchByRegex && findNode(store.searchByRegex.trigger) != null) {
+      else if (store.searchByRegex && findNode(store.searchByRegex.triggers) != null) {
         console.log(productURL, 'store.searchByRegex');
         try {
           let element = artoo.scrapeOne(html.find(store.searchByRegex.element));
@@ -163,13 +162,13 @@ const analyzeThis = async function(product){
         }
       }
       // Else try with 'used' div
-      else if (findNode(store.selector.used)) {
+      else if (findNode(store.selectors.used)) {
         console.log(product.sku, "→ Detected as used");
-        result.diff = getDiffFrom(store.selector.used);
+        result.diff = getDiffFrom(store.selectors.used);
         result.used = true;
       }
       // Else, check if its out of stock
-      else if (findNode(store.selector.nostock)) {
+      else if (findNode(store.selectors.nostock)) {
         result.error = 'nostock';
         console.log(product.sku, "→ Product without stock");
       }
