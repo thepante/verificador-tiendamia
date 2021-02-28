@@ -24,7 +24,7 @@ function fillProductData() {
 fillProductData();
 
 // Assign correct div for 'same price as' text
-let divSamePrice = (product.store === 'amz') ? ".same-price-amz" : "#product-price-clone .amz-span";
+let samePriceSelector = (product.store === 'amz') ? ".same-price-amz" : "#product-price-clone .amz-span";
 
 // Assign store name by its code
 let storeName = (product.store === 'amz') ? 'Amazon' : (product.store === 'ebay') ? 'eBay' : 'Walmart';
@@ -84,12 +84,14 @@ const icon = {
 }
 
 // Modify price info text HTML
-const originalText = document.querySelector(divSamePrice).innerText;
-const infoHTML = `
+divs.samePrice = document.querySelector(samePriceSelector);
+const originalText = divs.samePrice.innerText;
+const statusHTML = `
   <div id="vt-status">${icon.spinner}</div>
   <span id="vt-splabel" style="float: left; margin-left: 5px; opacity: 0.6;">${originalText}</span>
 `;
-document.querySelector(divSamePrice).innerHTML = infoHTML;
+divs.samePrice.innerHTML = statusHTML;
+divs.samePrice.style.display = 'flex';
 divs.status = document.getElementById('vt-status');
 divs.label  = document.getElementById('vt-splabel');
 
