@@ -78,7 +78,7 @@
 
 /* - Statusmarks - */
 
-svg {
+#vt-status svg {
   width: 12px;
   display: block;
 }
