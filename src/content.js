@@ -124,9 +124,9 @@ function updateStyle(rules){
  * @param {object} Object - At least `label` have to be present
  */
 function showStatus({url, label, color, opacity, mark, priceStyle, diffDisplayed}) {
-  divs.status.innerHTML = (mark) ? mark : icon.spinner;
-  divs.label.style.opacity = (opacity) ? String(opacity) : '1';
-  divs.label.innerHTML = `<a href="${url ? url : '#'}" target="_blank" title="${texts.viewInStore}">${label}</a>`;
+  divs.status.innerHTML = mark || icon.spinner;
+  divs.label.style.opacity = opacity ? String(opacity) : '1';
+  divs.label.innerHTML = `<a href="${url || '#'}" target="_blank" title="${texts.viewInStore}">${label}</a>`;
 
   let css = '';
   if (priceStyle) css += ` #product-price-clone .price {${priceStyle}}`;
@@ -142,7 +142,7 @@ function showStatus({url, label, color, opacity, mark, priceStyle, diffDisplayed
     }
   `;
 
-  css += ` #vt-splabel, #vt-splabel a {color:${(color) ? color : 'black'};}`;
+  css += ` #vt-splabel, #vt-splabel a {color:${color || 'black'};}`;
   updateStyle(css);
 }
 
