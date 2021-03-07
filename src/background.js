@@ -4,33 +4,33 @@ var artoo = require('artoo-js');
 
 const PROPS = {
   amz: {
-    url: "https://www.amazon.com/dp/",
+    url: 'https://www.amazon.com/dp/',
     selectors: {
       main: ['#price_inside_buybox', '#priceblock_ourprice', '#priceblock_saleprice'],
-      used: '#usedBuySection',
-      nostock: '#outOfStock',
+      used: ['#usedBuySection'],
+      nostock: ['#outOfStock'],
+      alt: ['#availability span.a-declarative a', '[data-action="show-all-offers-display"] .a-link-normal'],
     },
-    altPage: {
-      triggers: ['#availability span.a-declarative a', '[data-action="show-all-offers-display"] .a-link-normal'],
+    alt: {
       element: '.a-price .a-offscreen',
       url: 'https://www.amazon.com/gp/aod/ajax/?filters=%257B%2522all%2522%253Atrue%252C%2522new%2522%253Atrue%257D&isonlyrenderofferlist=true&asin=',
     },
   },
 
   ebay: {
-    url: "https://www.ebay.com/itm/",
+    url: 'https://www.ebay.com/itm/',
     selectors: {
       main: ['#prcIsum', '#mm-saleDscPrc'],
+      regex: ['#finalPrc'],
     },
-    searchByRegex: {
-      triggers: "#finalPrc",
-      element: "#JSDF",
+    regex: {
+      element: '#JSDF',
       expression: /(binPriceOnly":"|"bp":"US\s\$)(.*?)"/,
-    },
+    }
   },
 
   wrt: {
-    url: "https://www.walmart.com/ip/",
+    url: 'https://www.walmart.com/ip/',
     selectors: {
       main: ['#price'],
     },
@@ -77,22 +77,30 @@ const analyzeThis = async function(product){
 
   let html;
 
-  const findNode = function(selector){
-    return artoo.scrapeOne(html.find(selector));
+  const findElement = selector => artoo.scrapeOne(html.find(selector));
+
+  const getDetectedMethod = function(methods){
+    let found = {};
+    Object.entries(methods).find(method => {
+      const [key, selectors] = method;
+      const foundSelector = selectors.find(findElement);
+      return foundSelector && (found.method = key) && (found.selector = foundSelector);
+    });
+    return found;
   }
 
-  const getPriceFrom = function(node){
-    let priceElement = findNode(node);
+  const getPriceFromElement = function(selector){
+    let priceElement = findElement(selector);
     priceElement = priceElement.match(/\b\d[\d,.]*\b/g);
     priceElement = priceElement.map(price => price.replace(',', ''));
 
-    // Array of price(s) collected - returns the highest
+    // Array with price(s) are collected - returns highest one
     return Math.max.apply(Math, priceElement.map(Number));
   }
 
-  const getDiffFrom = function(node){
-    let priceFromStore = getPriceFrom(node);
-    let diff = product.price - priceFromStore;
+  const getDiffFrom = function(selector){
+    const priceFromStore = getPriceFromElement(selector);
+    const diff = product.price - priceFromStore;
     console.log(product.sku, '→ Original/highest:', priceFromStore);
     return Number(diff.toFixed(2));
   }
@@ -113,70 +121,48 @@ const analyzeThis = async function(product){
   /** Search for a price to calc the diff */
   async function searchDiff() {
     html = artoo.helpers.jquerify(productPage.data);
-    const mainSelector = store.selectors.main.find(selector => findNode(selector));
+    const detected = getDetectedMethod(store.selectors);
 
-    // Main method
-    if (mainSelector) {
-      console.log(product.sku, "→ selector:", mainSelector);
-      result.diff = getDiffFrom(mainSelector);
-    }
-    else {
-      // In case price wasn't found through main selector
-      const altPageTrigger = store.altPage.triggers.find(selector => findNode(selector));
+    console.log(`${product.sku} → ${detected.method}: ${detected.selector}`);
 
-      if (store.altPage && altPageTrigger) {
-        console.log(product.sku, "→ Alternative page load. Selector:", altPageTrigger);
-
-        const altPageUrl = store.altPage.url + product.sku;
-        productPage = await loadProductPage(altPageUrl);
+    switch(detected.method) {
+      case 'nostock':
+        result.error = 'nostock';
+        break
+      case 'used':
+        result.used = true;
+      case 'main':
+        result.diff = getDiffFrom(detected.selector);
+        break
+      case 'alt':
+        const altURL = store.alt.url + product.sku;
+        productPage = await loadProductPage(altURL);
         html = artoo.helpers.jquerify(productPage.data);
 
-        let pricesList = artoo.scrape(html.find(store.altPage.element));
-        pricesList = pricesList.map(price => Number(price.replace('$', '')));
-
+        const pricesList = artoo.scrape(html.find(store.alt.element)).map(price => Number(price.replace('$', '')));
         const tmPriceIndex = pricesList.indexOf(product.price);
         const diff = (tmPriceIndex !== -1) ? 0 : product.price - pricesList[0];
 
-        console.table({
-          sku: product.sku,
-          url: altPageUrl,
-          diff: diff,
-          all: [pricesList],
-        });
+        console.table({ sku: product.sku, url: productURL, diff: diff, all: [pricesList] });
 
         result.diff = diff;
 
         if (pricesList.length > 1) result.all = pricesList;
-      }
-      // Case: search by regex in certain element
-      else if (store.searchByRegex && findNode(store.searchByRegex.triggers) != null) {
-        console.log(productURL, 'store.searchByRegex');
+        break
+      case 'regex':
         try {
-          let element = artoo.scrapeOne(html.find(store.searchByRegex.element));
-          let found = element.match(store.searchByRegex.expression)[2];
+          let element = artoo.scrapeOne(html.find(store.regex.element));
+          let found = element.match(store.regex.expression)[2];
           result.diff = Number(product.price) - Number(found);
           console.log("Regex Match:", found);
         } catch {
           console.log(product.sku, "→ Triggered regex search but wasn't found");
           result.error = 'notfound';
         }
-      }
-      // Else try with 'used' div
-      else if (findNode(store.selectors.used)) {
-        console.log(product.sku, "→ Detected as used");
-        result.diff = getDiffFrom(store.selectors.used);
-        result.used = true;
-      }
-      // Else, check if its out of stock
-      else if (findNode(store.selectors.nostock)) {
-        result.error = 'nostock';
-        console.log(product.sku, "→ Product without stock");
-      }
-      // Price wasn't found
-      else {
+        break
+      default:
         result.error = 'notfound';
-        console.log(product.sku, "→ Price in store not found");
-      }
+        console.log(product.sku, "→ Couldn't found price in origin store");
     }
 
   }
